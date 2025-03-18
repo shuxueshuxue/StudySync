@@ -1,0 +1,1906 @@
+<!-- web/templates/index.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Project</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <!-- Add highlight.js CSS for syntax highlighting -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github.min.css" id="light-theme-code">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/github-dark.min.css" id="dark-theme-code" disabled>
+    <style>
+        :root {
+            /* Theme variables will be set in CSS */
+            /* Light theme (default) */
+            --primary-color: #0078D7;
+            --secondary-color: #2AAA8A;
+            --accent-color: #6A0DAD;
+            --bg-color: #1E1E1E;
+            --card-color: #252526;
+            --text-color: #E1E1E1;
+            --border-color: #444444;
+            --hover-color: #2A2A2D;
+            --success-color: #73C991;
+            --warning-color: #DDB100;
+            --danger-color: #F14C4C;
+        }
+        
+        /* Dark theme */
+        html[data-theme='dark'] {
+            --primary-color: #4361ee;
+            --secondary-color: #3ECF8E;
+            --accent-color: #8A2BE2;
+            --bg-color: #121212;
+            --card-color: #1E1E1E;
+            --text-color: #F5F5F5;
+            --border-color: #333333;
+            --hover-color: #252525;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #F44336;
+        }
+        
+        /* Light theme */
+        html[data-theme='light'] {
+            --primary-color: #1976D2;
+            --secondary-color: #009688;
+            --accent-color: #673AB7;
+            --bg-color: #F5F5F5;
+            --card-color: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #E0E0E0;
+            --hover-color: #EEEEEE;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #F44336;
+        }
+        
+        /* Custom theme */
+        html[data-theme='custom'] {
+            --primary-color: #FF5722;
+            --secondary-color: #03A9F4;
+            --accent-color: #9C27B0;
+            --bg-color: #FFF8E1;
+            --card-color: #FFFFFF;
+            --text-color: #212121;
+            --border-color: #BDBDBD;
+            --hover-color: #F5F5F5;
+            --success-color: #8BC34A;
+            --warning-color: #FFEB3B;
+            --danger-color: #FF5252;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+        
+        .brand h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .brand-icon {
+            margin-right: 15px;
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .nav-links a:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+
+/* Copy button styling */
+.copy-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.markdown-body pre {
+    position: relative;
+}
+
+.markdown-body pre:hover .copy-button {
+    opacity: 1;
+}
+
+.copy-button:hover {
+    background-color: var(--accent-color);
+}
+
+.copy-button.copied {
+    background-color: var(--success-color);
+}
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 3fr;
+            gap: 20px;
+        }
+        
+        .sidebar {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+        }
+        
+        .sidebar h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+        
+        .sidebar-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .calendar-view {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .calendar-header h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .calendar-controls {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        
+        .calendar-days-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+        }
+        
+        .calendar-day-header {
+            text-align: center;
+            font-weight: bold;
+            padding: 10px;
+            color: var(--text-color);
+        }
+        
+        .calendar-day {
+            background-color: var(--bg-color);
+            border-radius: 4px;
+            min-height: 80px;
+            padding: 10px;
+            position: relative;
+            transition: background-color 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .calendar-day-number {
+            position: absolute;
+            top: 5px;
+            right: 8px;
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        
+        .day-content {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        
+        .letter-badge {
+            display: inline-block;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            text-align: center;
+            position: relative;
+        }
+        
+        .letter-badge.mine {
+            background-color: var(--primary-color);
+        }
+        
+        .letter-badge.shared {
+            background-color: var(--secondary-color);
+        }
+        
+        .letter-badge.not-shared {
+            background-color: var(--bg-color);
+            border: 1px solid var(--primary-color);
+            opacity: 0.7;
+        }
+        
+        .letter-badge .user-initials {
+            opacity: 0.8;
+            margin-right: 3px;
+        }
+        
+        .letter-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .letter-preview-content {
+            background-color: var(--card-color);
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 8px;
+            position: relative;
+            color: var(--text-color);
+        }
+        
+        .letter-preview-content h1,
+        .letter-preview-content h2,
+        .letter-preview-content h3 {
+            color: var(--primary-color);
+        }
+        
+        .close-preview {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 2rem;
+            color: white;
+            cursor: pointer;
+            z-index: 1001;
+        }
+        
+        .letter-actions {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .user-list {
+            margin-top: 20px;
+        }
+        
+        .user-list h3 {
+            margin-top: 0;
+            font-size: 1rem;
+            color: var(--primary-color);
+        }
+        
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .user-item:last-child {
+            border-bottom: none;
+        }
+        
+        .user-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        
+        .user-name {
+            flex-grow: 1;
+        }
+        
+        .user-letter-count {
+            background-color: var(--accent-color);
+            color: white;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 120px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -60px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.8rem;
+        }
+
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-color);
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary-color);
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .today {
+            border: 2px solid var(--primary-color);
+        }
+
+        .empty-day {
+            opacity: 0.3;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            background-color: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+        
+        /* Styles for the letter iframe */
+        .letter-iframe {
+            width: 100%;
+            height: calc(100vh - 150px);
+            border: none;
+            background-color: var(--card-color);
+        }
+
+        /* Theme switcher */
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 10px;
+            margin-top: 15px;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .theme-option {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .theme-option.active {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        
+        .theme-light {
+            background: linear-gradient(135deg, #f5f5f5 50%, #e0e0e0 50%);
+        }
+        
+        .theme-dark {
+            background: linear-gradient(135deg, #333333 50%, #121212 50%);
+        }
+        
+        .theme-custom {
+            background: linear-gradient(135deg, #FF5722 50%, #FFF8E1 50%);
+        }
+        
+        .edit-mode-toggle {
+            margin-top: 10px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            background-color: var(--bg-color);
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .edit-toggle {
+            margin-left: 10px;
+        }
+        
+        /* Switch toggle styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 48px;
+            height: 24px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--secondary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        /* Editor styles */
+        .letter-editor {
+            display: none;
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+        
+        .editor-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .editor-textarea {
+            width: 100%;
+            min-height: 500px;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Consolas', monospace;
+            font-size: 14px;
+            line-height: 1.6;
+            resize: vertical;
+        }
+        
+        /* Full page letter view */
+        .letter-page {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: var(--bg-color);
+            z-index: 1001;
+            overflow-y: auto;
+        }
+        
+        .letter-page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background-color: var(--card-color);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .letter-page-title {
+            color: var(--primary-color);
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .letter-page-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .letter-page-content {
+            max-width: 850px;
+            margin: 0 auto;
+            padding: 40px 30px;
+        }
+        
+        .toc-container {
+            position: fixed;
+            top: 70px;
+            right: 20px;
+            width: 250px;
+            max-height: calc(100vh - 100px);
+            background-color: var(--card-color);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 15px;
+            overflow-y: auto;
+            z-index: 1005;
+            border: 1px solid var(--border-color);
+            display: none;
+        }
+        
+        .toc-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .toc-item {
+            margin: 8px 0;
+        }
+        
+        .toc-link {
+            color: var(--text-color);
+            text-decoration: none;
+            display: block;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+            font-size: 0.9rem;
+        }
+        
+        .toc-link:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .toc-h2 {
+            padding-left: 0px;
+        }
+        
+        .toc-h3 {
+            padding-left: 15px;
+            font-size: 0.85rem;
+        }
+        
+        .toc-h4 {
+            padding-left: 30px;
+            font-size: 0.8rem;
+        }
+
+        /* Letter content styling improvements */
+        .letter-content {
+            line-height: 1.7;
+        }
+
+        .letter-container {
+            padding: 0 15px;
+        }
+        
+        /* Code block styling enhancements */
+        .markdown-body pre {
+            background-color: var(--bg-color);
+            border-radius: 6px;
+            padding: 1em;
+            overflow: auto;
+            margin: 1em 0;
+        }
+        
+        .markdown-body code {
+            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-size: 0.9em;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .markdown-body pre code {
+            background-color: transparent;
+            padding: 0;
+            border-radius: 0;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .calendar-grid,
+            .calendar-days-container {
+                grid-template-columns: repeat(7, 1fr);
+            }
+            
+            .calendar-day {
+                min-height: 60px;
+            }
+            
+            .toc-container {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">
+                    {% if app_icon == "lightbulb" %}
+                    <i class="fas fa-lightbulb"></i>
+                    {% elif app_icon == "sparkles" %}
+                    <i class="fas fa-magic"></i>
+                    {% elif app_icon == "star" %}
+                    <i class="fas fa-star"></i>
+                    {% elif app_icon == "compass" %}
+                    <i class="fas fa-compass"></i>
+                    {% elif app_icon == "rocket" %}
+                    <i class="fas fa-rocket"></i>
+                    {% else %}
+                    <i class="fas fa-lightbulb"></i>
+                    {% endif %}
+                </div>
+                <h1>Nova Project</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/" class="active"><i class="fas fa-calendar-alt"></i> Calendar</a>
+                <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
+            </div>
+        </header>
+        
+        <div class="main-content">
+            <div class="sidebar">
+                <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
+                <div class="sidebar-actions">
+                    <button id="generate-letter" class="btn btn-success">
+                        <i class="fas fa-pen-fancy"></i> Generate Today's Letter
+                    </button>
+                    <button id="sync-letters" class="btn">
+                        <i class="fas fa-sync-alt"></i> Sync Letters
+                    </button>
+                    <button id="open-settings" class="btn btn-accent">
+                        <i class="fas fa-cog"></i> Settings
+                    </button>
+                </div>
+                
+                <!-- Theme Switcher -->
+                <div class="theme-switcher">
+                    <span>Theme:</span>
+                    <div class="theme-option theme-light" data-theme="light" title="Light Theme"></div>
+                    <div class="theme-option theme-dark" data-theme="dark" title="Dark Theme"></div>
+                    <div class="theme-option theme-custom" data-theme="custom" title="Custom Theme"></div>
+                </div>
+                
+                <!-- Edit Mode Toggle -->
+                <div class="edit-mode-toggle">
+                    <span>Edit Mode:</span>
+                    <label class="switch edit-toggle">
+                        <input type="checkbox" id="edit-mode-toggle" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                
+                <div class="user-list">
+                    <h3><i class="fas fa-users"></i> Community</h3>
+                    <div id="user-list-container">
+                        <div class="loading">
+                            <div class="spinner"></div>
+                            <p>Loading users...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="calendar-view">
+                <div class="calendar-header">
+                    <h2><i class="fas fa-calendar-alt"></i> <span id="current-month">March 2025</span></h2>
+                    <div class="calendar-controls">
+                        <button id="prev-month" class="btn">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button id="next-month" class="btn">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day-header">Sun</div>
+                    <div class="calendar-day-header">Mon</div>
+                    <div class="calendar-day-header">Tue</div>
+                    <div class="calendar-day-header">Wed</div>
+                    <div class="calendar-day-header">Thu</div>
+                    <div class="calendar-day-header">Fri</div>
+                    <div class="calendar-day-header">Sat</div>
+                </div>
+                
+                <!-- Calendar days will be populated by JavaScript -->
+                <div id="calendar-days-container" class="calendar-days-container">
+                    <div id="calendar-days" class="loading">
+                        <div class="spinner"></div>
+                        <p>Loading calendar...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Letter Edit Mode -->
+    <div id="letter-editor" class="letter-editor">
+        <h2>Edit Letter</h2>
+        <textarea id="editor-content" class="editor-textarea"></textarea>
+        <div class="editor-actions">
+            <button id="cancel-edit" class="btn btn-warning">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+            <button id="save-edit" class="btn btn-success">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </div>
+    
+    <!-- Full Letter Page View -->
+    <div id="letter-page" class="letter-page">
+        <div class="letter-page-header">
+            <h3 class="letter-page-title">Letter View</h3>
+            <div class="letter-page-actions">
+                <button id="edit-letter" class="btn btn-accent">
+                    <i class="fas fa-edit"></i> Edit
+                </button>
+                <button id="toggle-toc" class="btn">
+                    <i class="fas fa-list"></i> Toggle TOC
+                </button>
+                <button id="close-letter-page" class="btn btn-warning">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+        <div id="letter-page-content" class="letter-page-content">
+            <!-- Letter content will be loaded here -->
+        </div>
+        <!-- TOC will be added dynamically -->
+    </div>
+    
+    <!-- Legacy letter preview (will be replaced) -->
+    <div id="letter-preview" class="letter-preview">
+        <div class="close-preview" id="close-preview">
+            <i class="fas fa-times"></i>
+        </div>
+        <div class="letter-preview-content" id="letter-preview-content">
+            <!-- Letter content will be loaded as an iframe -->
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        <!-- Notification message will be shown here -->
+    </div>
+    
+    <!-- Required Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.9/MathJax.js?config=TeX-AMS_HTML"></script>
+    
+    <script>
+// Global variables and DOM element references
+const PORT = "{{ port }}";
+const API_BASE = `http://localhost:${PORT}/api`;
+const USERNAME = "{{ username }}";
+
+// DOM element references
+const calendarDaysContainerEl = document.getElementById('calendar-days-container');
+const calendarDaysEl = document.getElementById('calendar-days');
+const currentMonthEl = document.getElementById('current-month');
+const prevMonthBtn = document.getElementById('prev-month');
+const nextMonthBtn = document.getElementById('next-month');
+const letterPreviewEl = document.getElementById('letter-preview');
+const letterPreviewContentEl = document.getElementById('letter-preview-content');
+const closePreviewBtn = document.getElementById('close-preview');
+const generateLetterBtn = document.getElementById('generate-letter');
+const syncLettersBtn = document.getElementById('sync-letters');
+const openSettingsBtn = document.getElementById('open-settings');
+const userListContainerEl = document.getElementById('user-list-container');
+const themeOptions = document.querySelectorAll('.theme-option');
+const editModeToggle = document.getElementById('edit-mode-toggle');
+const letterEditorEl = document.getElementById('letter-editor');
+const editorContentEl = document.getElementById('editor-content');
+const cancelEditBtn = document.getElementById('cancel-edit');
+const saveEditBtn = document.getElementById('save-edit');
+const letterPageEl = document.getElementById('letter-page');
+const letterPageContentEl = document.getElementById('letter-page-content');
+const closeLettterPageBtn = document.getElementById('close-letter-page');
+const editLetterBtn = document.getElementById('edit-letter');
+const toggleTocBtn = document.getElementById('toggle-toc');
+const notificationEl = document.getElementById('notification');
+
+// State variables
+let myLetters = [];
+let communityLetters = {};
+let currentEditLetter = null;
+let editMode = true;
+let currentDate = new Date();
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Configure marked.js with syntax highlighting
+    marked.setOptions({
+        highlight: function(code, lang) {
+            const language = hljs.getLanguage(lang) ? lang : 'plaintext';
+            return hljs.highlight(code, { language }).value;
+        },
+        langPrefix: 'hljs language-',
+        gfm: true,
+        breaks: true
+    });
+
+    renderCalendar();
+    loadLetters();
+    loadCommunityLetters();
+    initTheme();
+    loadMathJax();
+    
+    // Event listeners
+    prevMonthBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() - 1);
+        renderCalendar();
+    });
+    
+    nextMonthBtn.addEventListener('click', () => {
+        currentDate.setMonth(currentDate.getMonth() + 1);
+        renderCalendar();
+    });
+    
+    closePreviewBtn.addEventListener('click', () => {
+        letterPreviewEl.style.display = 'none';
+        letterPreviewContentEl.innerHTML = ''; // Clear content to release memory
+    });
+    
+    generateLetterBtn.addEventListener('click', generateLetter);
+    syncLettersBtn.addEventListener('click', syncLetters);
+    openSettingsBtn.addEventListener('click', () => {
+        window.location.href = '/settings';
+    });
+    
+    // Theme switcher
+    themeOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            const theme = option.getAttribute('data-theme');
+            setTheme(theme);
+        });
+    });
+    
+    // Edit mode toggle - enabled by default
+    editModeToggle.checked = true;
+    editMode = true;
+    editModeToggle.addEventListener('change', () => {
+        editMode = editModeToggle.checked;
+        showNotification(editMode ? "Edit mode enabled" : "Edit mode disabled");
+    });
+    
+    // Editor buttons
+    cancelEditBtn.addEventListener('click', cancelEdit);
+    saveEditBtn.addEventListener('click', saveEdit);
+    
+    // Letter page buttons
+    closeLettterPageBtn.addEventListener('click', () => {
+        letterPageEl.style.display = 'none';
+        // Hide the TOC when closing the letter page
+        hideTOC();
+    });
+    
+    editLetterBtn.addEventListener('click', () => {
+        if (currentEditLetter) {
+            startEdit(currentEditLetter.content, currentEditLetter.username, currentEditLetter.dateStr);
+            letterPageEl.style.display = 'none';
+            hideTOC();
+        }
+    });
+    
+    toggleTocBtn.addEventListener('click', toggleTableOfContents);
+    
+    // Check for letter hash in URL
+    checkForLetterInUrl();
+});
+
+// Hide the table of contents
+function hideTOC() {
+    const tocContainer = document.querySelector('.toc-container');
+    if (tocContainer) {
+        tocContainer.style.display = 'none';
+    }
+}
+
+// Load MathJax dynamically
+function loadMathJax() {
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js";
+    script.async = true;
+    document.head.appendChild(script);
+    
+    window.MathJax = {
+        tex: {
+            inlineMath: [['$', '$'], ['\\(', '\\)']],
+            displayMath: [['$$', '$$'], ['\\[', '\\]']]
+        },
+        svg: {
+            fontCache: 'global'
+        },
+        options: {
+            enableMenu: false
+        }
+    };
+}
+
+// Check if URL has a letter hash to open
+function checkForLetterInUrl() {
+    if (window.location.hash.startsWith('#letter/')) {
+        const dateStr = window.location.hash.substring(8);
+        if (dateStr && dateStr.length === 8) {
+            // Wait a bit for letters to load
+            setTimeout(() => {
+                openLetter(dateStr, USERNAME, true);
+            }, 1000);
+        }
+    }
+}
+
+// Initialize theme
+function initTheme() {
+    const savedTheme = localStorage.getItem('nova-theme') || 'light';
+    setTheme(savedTheme);
+}
+
+// Set theme
+function setTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('nova-theme', theme);
+    
+    // Update theme option active state
+    themeOptions.forEach(option => {
+        if (option.getAttribute('data-theme') === theme) {
+            option.classList.add('active');
+        } else {
+            option.classList.remove('active');
+        }
+    });
+    
+    // Update code highlighting theme
+    if (theme === 'dark') {
+        document.getElementById('light-theme-code').disabled = true;
+        document.getElementById('dark-theme-code').disabled = false;
+    } else {
+        document.getElementById('light-theme-code').disabled = false;
+        document.getElementById('dark-theme-code').disabled = true;
+    }
+}
+
+// Toggle table of contents
+function toggleTableOfContents() {
+    const tocContainer = document.querySelector('.toc-container');
+    if (tocContainer) {
+        if (tocContainer.style.display === 'none' || !tocContainer.style.display) {
+            tocContainer.style.display = 'block';
+        } else {
+            tocContainer.style.display = 'none';
+        }
+    }
+}
+
+// Function to render the calendar
+function renderCalendar() {
+    // Clear previous calendar
+    calendarDaysContainerEl.innerHTML = '';
+    if(calendarDaysEl) {
+        calendarDaysEl.className = ''; 
+        calendarDaysEl.innerHTML = '';
+    }
+    
+    // Update month and year display
+    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 
+                       'July', 'August', 'September', 'October', 'November', 'December'];
+    currentMonthEl.textContent = `${monthNames[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const lastDay = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+    
+    // Get the day of week for the first day (0 = Sunday, 6 = Saturday)
+    const firstDayIndex = firstDay.getDay();
+    
+    // Create empty cells for days before the first day of the month
+    for (let i = 0; i < firstDayIndex; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty-day';
+        calendarDaysContainerEl.appendChild(emptyDay);
+    }
+    
+    // Create cells for each day of the month
+    const today = new Date();
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+        const dayEl = document.createElement('div');
+        dayEl.className = 'calendar-day';
+        
+        // Check if this is today
+        if (today.getDate() === day && 
+            today.getMonth() === currentDate.getMonth() && 
+            today.getFullYear() === currentDate.getFullYear()) {
+            dayEl.classList.add('today');
+        }
+        
+        // Add day number
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'calendar-day-number';
+        dayNumber.textContent = day;
+        dayEl.appendChild(dayNumber);
+        
+        // Add content container
+        const dayContent = document.createElement('div');
+        dayContent.className = 'day-content';
+        dayEl.appendChild(dayContent);
+        
+        // Add data attributes for identification
+        const dateObj = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+        const dateStr = formatDateForAPI(dateObj);
+        dayEl.setAttribute('data-date', dateStr);
+        
+        calendarDaysContainerEl.appendChild(dayEl);
+    }
+    
+    // After rendering the calendar, populate with letter data if available
+    if (myLetters.length > 0) {
+        populateCalendarWithLetters();
+    }
+}
+
+// Function to format date for API (YYYYMMDD)
+function formatDateForAPI(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}${month}${day}`;
+}
+
+// Function to format date for display (YYYY-MM-DD)
+function formatDateForDisplay(dateStr) {
+    // Convert from YYYYMMDD to YYYY-MM-DD
+    return `${dateStr.substring(0, 4)}-${dateStr.substring(4, 6)}-${dateStr.substring(6, 8)}`;
+}
+
+// Load user's letters
+function loadLetters() {
+    fetch(`${API_BASE}/letters`)
+        .then(response => response.json())
+        .then(data => {
+            myLetters = data;
+            populateCalendarWithLetters();
+        })
+        .catch(error => {
+            console.error('Error loading letters:', error);
+            showNotification('Error loading letters', true);
+        });
+}
+
+// Load community letters
+function loadCommunityLetters() {
+    fetch(`${API_BASE}/community_letters`)
+        .then(response => response.json())
+        .then(data => {
+            communityLetters = data;
+            populateCalendarWithLetters();
+            renderUserList();
+        })
+        .catch(error => {
+            console.error('Error loading community letters:', error);
+            // Still render user list even if there's an error
+            renderUserList();
+        });
+}
+
+// Populate calendar with letter data
+function populateCalendarWithLetters() {
+    // Clear existing letter badges
+    document.querySelectorAll('.letter-badge').forEach(badge => badge.remove());
+    
+    // Add my letters
+    myLetters.forEach(letter => {
+        const dateStr = letter.date_str;
+        const dayEl = document.querySelector(`.calendar-day[data-date="${dateStr}"]`);
+        
+        if (dayEl) {
+            const dayContent = dayEl.querySelector('.day-content');
+            
+            const letterBadge = document.createElement('div');
+            letterBadge.className = `letter-badge ${letter.synced ? 'shared' : 'not-shared'}`;
+            letterBadge.innerHTML = `<span class="user-initials">Me</span>`;
+            letterBadge.setAttribute('data-date', dateStr);
+            letterBadge.setAttribute('data-user', USERNAME);
+            letterBadge.setAttribute('data-synced', letter.synced);
+            letterBadge.setAttribute('data-format', letter.format || 'unknown');
+            
+            // Add tooltip
+            const tooltip = document.createElement('span');
+            tooltip.className = 'tooltiptext';
+            tooltip.textContent = letter.synced ? 'Your shared letter' : 'Your private letter';
+            letterBadge.classList.add('tooltip');
+            letterBadge.appendChild(tooltip);
+            
+            letterBadge.addEventListener('click', () => openLetter(dateStr, USERNAME, true));
+            dayContent.appendChild(letterBadge);
+        }
+    });
+    
+    // Add community letters
+    Object.keys(communityLetters).forEach(username => {
+        if (username !== USERNAME) {
+            communityLetters[username].forEach(letter => {
+                const dateStr = letter.date_str;
+                const dayEl = document.querySelector(`.calendar-day[data-date="${dateStr}"]`);
+                
+                if (dayEl) {
+                    const dayContent = dayEl.querySelector('.day-content');
+                    
+                    const letterBadge = document.createElement('div');
+                    letterBadge.className = 'letter-badge shared';
+                    letterBadge.innerHTML = `<span class="user-initials">${getInitials(username)}</span>`;
+                    letterBadge.setAttribute('data-date', dateStr);
+                    letterBadge.setAttribute('data-user', username);
+                    letterBadge.setAttribute('data-format', letter.format || 'unknown');
+                    
+                    // Add tooltip
+                    const tooltip = document.createElement('span');
+                    tooltip.className = 'tooltiptext';
+                    tooltip.textContent = `${username}'s letter`;
+                    letterBadge.classList.add('tooltip');
+                    letterBadge.appendChild(tooltip);
+                    
+                    letterBadge.addEventListener('click', () => openLetter(dateStr, username, false));
+                    dayContent.appendChild(letterBadge);
+                }
+            });
+        }
+    });
+}
+
+// Render user list in sidebar
+function renderUserList() {
+    userListContainerEl.innerHTML = '';
+    
+    // Add current user first
+    const currentUserItem = document.createElement('div');
+    currentUserItem.className = 'user-item';
+    
+    const currentUserAvatar = document.createElement('div');
+    currentUserAvatar.className = 'user-avatar';
+    currentUserAvatar.textContent = getInitials(USERNAME);
+    
+    const currentUserName = document.createElement('div');
+    currentUserName.className = 'user-name';
+    currentUserName.textContent = `${USERNAME} (You)`;
+    
+    const currentUserLetterCount = document.createElement('div');
+    currentUserLetterCount.className = 'user-letter-count';
+    currentUserLetterCount.textContent = myLetters.length;
+    
+    currentUserItem.appendChild(currentUserAvatar);
+    currentUserItem.appendChild(currentUserName);
+    currentUserItem.appendChild(currentUserLetterCount);
+    userListContainerEl.appendChild(currentUserItem);
+    
+    // Add other community users
+    Object.keys(communityLetters).forEach(username => {
+        if (username !== USERNAME) {
+            const userItem = document.createElement('div');
+            userItem.className = 'user-item';
+            
+            const userAvatar = document.createElement('div');
+            userAvatar.className = 'user-avatar';
+            userAvatar.textContent = getInitials(username);
+            
+            const userName = document.createElement('div');
+            userName.className = 'user-name';
+            userName.textContent = username;
+            
+            const userLetterCount = document.createElement('div');
+            userLetterCount.className = 'user-letter-count';
+            userLetterCount.textContent = communityLetters[username].length;
+            
+            userItem.appendChild(userAvatar);
+            userItem.appendChild(userName);
+            userItem.appendChild(userLetterCount);
+            userListContainerEl.appendChild(userItem);
+        }
+    });
+    
+    // If no other users, show a message
+    if (Object.keys(communityLetters).length <= 1) {
+        const noUsersEl = document.createElement('div');
+        noUsersEl.textContent = 'No other users have shared letters yet';
+        noUsersEl.style.padding = '10px 0';
+        noUsersEl.style.color = '#999';
+        noUsersEl.style.fontStyle = 'italic';
+        userListContainerEl.appendChild(noUsersEl);
+    }
+}
+
+// Get initials from username
+function getInitials(username) {
+    if (!username) return '?';
+    return username.charAt(0).toUpperCase();
+}
+
+// Function to open letter in the modern full-page view
+function openLetter(dateStr, username, isMyLetter) {
+    // Show loading state in the letter page
+    letterPageContentEl.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading letter...</p></div>';
+    letterPageEl.style.display = 'block';
+    
+    // Hide any existing TOC first
+    hideTOC();
+    
+    const apiEndpoint = isMyLetter 
+        ? `${API_BASE}/letter/${dateStr}`
+        : `${API_BASE}/community_letter/${username}/${dateStr}`;
+    
+    fetch(apiEndpoint)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.error) {
+                letterPageContentEl.innerHTML = `<div style="color: var(--danger-color); padding: 20px; text-align: center;">
+                    <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                </div>`;
+                return;
+            }
+            
+            // Store letter data for editing
+            currentEditLetter = {
+                content: data.content,
+                username: username,
+                dateStr: dateStr,
+                isMyLetter: isMyLetter,
+                format: data.format || 'markdown'
+            };
+            
+            // Show edit button only if edit mode is enabled
+            editLetterBtn.style.display = editMode ? 'block' : 'none';
+            
+            // Check if it's markdown or HTML
+            if (data.format === 'markdown' || data.content.trim().startsWith('#') || data.content.indexOf('\n## ') > -1) {
+                // It's markdown, render with marked
+                renderMarkdownLetter(data.content, dateStr, username, isMyLetter);
+            } else {
+                // It's HTML, use the template renderer
+                renderHtmlLetter(data.content, dateStr, username, isMyLetter);
+            }
+            
+            // Update URL hash for direct linking
+            if (isMyLetter) {
+                window.location.hash = `letter/${dateStr}`;
+            }
+        })
+        .catch(error => {
+            console.error('Error loading letter:', error);
+            letterPageContentEl.innerHTML = `<div style="color: var(--danger-color); padding: 20px; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> Failed to load letter: ${error.message}
+                <p>Please try again or check the browser console for details.</p>
+            </div>`;
+        });
+}
+
+// Render markdown letter
+function renderMarkdownLetter(markdownContent, dateStr, username, isMyLetter) {
+    try {
+        // Parse tags and title (if present at the beginning)
+        let tags = [];
+        let title = `Letter from ${username}`;
+        
+        const lines = markdownContent.split('\n');
+        if (lines.length > 0 && lines[0].startsWith('tags:')) {
+            // Extract tags
+            tags = lines[0].substring(5).trim().split(',').map(tag => tag.trim());
+            lines.shift(); // Remove tags line
+        }
+        
+        if (lines.length > 0 && lines[0].startsWith('# ')) {
+            // Extract title
+            title = lines[0].substring(2).trim();
+            lines.shift(); // Remove title line
+        }
+        
+        // Create formatted date
+        const formattedDate = formatDateForDisplay(dateStr);
+        
+        // Render markdown content safely
+        let htmlContent;
+        try {
+            htmlContent = marked.parse(lines.join('\n'));
+        } catch (markdownError) {
+            console.error("Markdown parsing error:", markdownError);
+            htmlContent = `<div class="error">Error parsing markdown: ${markdownError.message}</div>
+                          <pre>${lines.join('\n')}</pre>`;
+        }
+        
+        // Create the complete HTML with the original pretty styling
+        const letterHtml = `
+            <div class="letter-container">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px;">
+                    <div>
+                        <h1 style="margin-bottom: 10px; color: var(--primary-color);">${title}</h1>
+                        <div style="display: flex; gap: 15px; font-size: 0.9rem; color: var(--text-color); opacity: 0.7;">
+                            <div><i class="fas fa-calendar-alt"></i> ${formattedDate}</div>
+                            <div><i class="fas fa-user"></i> ${username}</div>
+                        </div>
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px; max-width: 40%;">
+                        ${tags.map(tag => `<span style="padding: 4px 8px; background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); border-radius: 4px; font-size: 0.8rem;">${tag}</span>`).join('')}
+                    </div>
+                </div>
+                
+                <div class="letter-content markdown-body">
+                    ${htmlContent}
+                </div>
+            </div>
+        `;
+        
+        letterPageContentEl.innerHTML = letterHtml;
+        
+        // Create and attach the table of contents
+        createTableOfContents();
+        
+        // Let the browser render the content before applying MathJax
+        setTimeout(() => {
+            // Apply MathJax if available
+            if (window.MathJax) {
+                try {
+                    if (window.MathJax.typesetPromise) {
+                        window.MathJax.typesetPromise([letterPageContentEl]).catch(err => {
+                            console.log('MathJax typeset error (safely handled):', err);
+                        });
+                    } else if (window.MathJax.Hub) {
+                        window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, letterPageContentEl]);
+                    }
+                } catch (mathJaxError) {
+                    console.warn("MathJax processing error (safely handled):", mathJaxError);
+                }
+            }
+               
+            // Initialize syntax highlighting
+try {
+    // Force re-highlighting of all code blocks
+    document.querySelectorAll('pre code').forEach((block) => {
+        // Add default class if none exists
+        if (!block.className) {
+            block.className = 'language-plaintext';
+        }
+        hljs.highlightElement(block);
+        
+        // Add copy button to each code block
+        const pre = block.parentNode;
+        const copyButton = document.createElement('button');
+        copyButton.className = 'copy-button';
+        copyButton.textContent = 'Copy';
+        
+        copyButton.addEventListener('click', () => {
+            // Copy code to clipboard
+            const code = block.textContent;
+            navigator.clipboard.writeText(code).then(() => {
+                // Visual feedback
+                copyButton.textContent = 'Copied!';
+                copyButton.classList.add('copied');
+                
+                // Reset after 2 seconds
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                    copyButton.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+                copyButton.textContent = 'Error';
+                setTimeout(() => {
+                    copyButton.textContent = 'Copy';
+                }, 2000);
+            });
+        });
+        
+        pre.appendChild(copyButton);
+    });
+} catch (syntaxError) {
+    console.warn("Syntax highlighting error (safely handled):", syntaxError);
+}
+
+        }, 100);
+    } catch (e) {
+        console.error("Error rendering markdown:", e);
+        letterPageContentEl.innerHTML = `
+            <div style="color: var(--danger-color); padding: 20px; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Error rendering markdown: ${e.message}
+                <p>The content will be displayed as raw text below:</p>
+            </div>
+            <pre style="white-space: pre-wrap; overflow-wrap: break-word; padding: 20px; background: #f5f5f5; color: #333; margin-top: 20px; border-radius: 4px;">${markdownContent}</pre>
+        `;
+    }
+}
+
+// Render HTML letter
+function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
+    try {
+        // Create formatted date
+        const formattedDate = formatDateForDisplay(dateStr);
+        
+        // Create a safe container for the HTML content
+        const safeContainer = document.createElement('div');
+        safeContainer.className = 'html-letter-container';
+        letterPageContentEl.innerHTML = '';
+        letterPageContentEl.appendChild(safeContainer);
+        
+        // Two different approaches:
+        // 1. If it looks like a complete HTML document, use iframe for isolation
+        if (htmlContent.trim().toLowerCase().startsWith('<!doctype html>') || 
+            htmlContent.trim().toLowerCase().startsWith('<html')) {
+            
+            const iframe = document.createElement('iframe');
+            iframe.className = 'letter-iframe';
+            iframe.style.width = '100%';
+            iframe.style.height = 'calc(100vh - 100px)';
+            iframe.style.border = 'none';
+            
+            safeContainer.appendChild(iframe);
+            
+            try {
+                const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                iframeDoc.open();
+                iframeDoc.write(htmlContent);
+                iframeDoc.close();
+            } catch (iframeError) {
+                console.error("Error with iframe rendering:", iframeError);
+                safeContainer.innerHTML = `
+                    <div style="color: var(--danger-color); padding: 20px; text-align: center;">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Error rendering HTML in iframe. 
+                        <p>Attempting direct rendering instead.</p>
+                    </div>
+                `;
+                // Fallback to direct innerHTML
+                setTimeout(() => {
+                    safeContainer.innerHTML = htmlContent;
+                }, 100);
+            }
+        } 
+        // 2. Otherwise treat as HTML fragment and insert directly
+        else {
+            safeContainer.innerHTML = htmlContent;
+            
+            // Try to apply MathJax if needed
+            setTimeout(() => {
+                if (window.MathJax) {
+                    try {
+                        if (window.MathJax.typesetPromise) {
+                            window.MathJax.typesetPromise([safeContainer]).catch(err => {
+                                console.log('MathJax typeset error (safely handled):', err);
+                            });
+                        } else if (window.MathJax.Hub) {
+                            window.MathJax.Hub.Queue(["Typeset", window.MathJax.Hub, safeContainer]);
+                        }
+                    } catch (mathJaxError) {
+                        console.warn("MathJax processing error (safely handled):", mathJaxError);
+                    }
+                }
+                
+                // Also apply syntax highlighting to any code blocks
+                try {
+                    safeContainer.querySelectorAll('pre code').forEach((block) => {
+                        if (!block.className) {
+                            block.className = 'language-plaintext';
+                        }
+                        hljs.highlightElement(block);
+                    });
+                } catch (syntaxError) {
+                    console.warn("Syntax highlighting error (safely handled):", syntaxError);
+                }
+            }, 100);
+        }
+    } catch (e) {
+        console.error("Error rendering HTML:", e);
+        letterPageContentEl.innerHTML = `
+            <div style="color: var(--danger-color); padding: 20px; text-align: center;">
+                <i class="fas fa-exclamation-triangle"></i> 
+                Error rendering HTML: ${e.message}
+                <p>The HTML content cannot be displayed safely.</p>
+            </div>
+        `;
+    }
+}
+
+// Create table of contents
+function createTableOfContents() {
+    try {
+        const headings = letterPageContentEl.querySelectorAll('h2, h3, h4');
+        
+        // Remove any existing TOC
+        const existingToc = document.querySelector('.toc-container');
+        if (existingToc) {
+            existingToc.remove();
+        }
+        
+        if (headings.length > 0) {
+            // Create TOC container
+            const tocContainer = document.createElement('div');
+            tocContainer.className = 'toc-container';
+            
+            const tocTitle = document.createElement('div');
+            tocTitle.className = 'toc-title';
+            tocTitle.textContent = 'Table of Contents';
+            tocContainer.appendChild(tocTitle);
+            
+            const tocList = document.createElement('ul');
+            tocList.className = 'toc-list';
+            
+            // Add TOC items
+            headings.forEach((heading, index) => {
+                // Create ID for the heading if it doesn't have one
+                const headingId = heading.id || `heading-${index}`;
+                heading.id = headingId;
+                
+                // Create TOC item
+                const tocItem = document.createElement('li');
+                tocItem.className = 'toc-item';
+                
+                const tocLink = document.createElement('a');
+                tocLink.className = `toc-link toc-${heading.tagName.toLowerCase()}`;
+                tocLink.href = `#${headingId}`;
+                tocLink.textContent = heading.textContent;
+                
+                tocLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    document.getElementById(headingId).scrollIntoView({ 
+                        behavior: 'smooth' 
+                    });
+                });
+                
+                tocItem.appendChild(tocLink);
+                tocList.appendChild(tocItem);
+            });
+            
+            tocContainer.appendChild(tocList);
+            document.body.appendChild(tocContainer);
+            
+            // Initially hide the TOC - will be toggled by button
+            tocContainer.style.display = 'none';
+        }
+    } catch (e) {
+        console.warn("Error creating table of contents:", e);
+        // Non-critical error, so just log and continue
+    }
+}
+
+// Start editing a letter
+function startEdit(content, username, dateStr) {
+    letterEditorEl.style.display = 'block';
+    editorContentEl.value = content;
+    
+    // Scroll to editor
+    letterEditorEl.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Cancel editing
+function cancelEdit() {
+    letterEditorEl.style.display = 'none';
+    editorContentEl.value = '';
+    currentEditLetter = null;
+}
+
+// Save edited letter
+function saveEdit() {
+    if (!currentEditLetter) {
+        showNotification('No letter to save', true);
+        return;
+    }
+    
+    const content = editorContentEl.value;
+    const dateStr = currentEditLetter.dateStr;
+    const username = currentEditLetter.username;
+    const format = currentEditLetter.format || 'markdown';
+    
+    fetch(`${API_BASE}/edit_letter`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            date_str: dateStr,
+            username: username,
+            content: content,
+            format: format
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification(data.error, true);
+                return;
+            }
+            
+            showNotification('Letter saved successfully');
+            
+            // Close editor
+            letterEditorEl.style.display = 'none';
+            
+            // Reload letters to refresh the calendar
+            loadLetters();
+            
+            // Wait a bit before reopening the letter
+            setTimeout(() => {
+                openLetter(dateStr, username, username === USERNAME);
+            }, 500);
+        })
+        .catch(error => {
+            console.error('Error saving letter:', error);
+            showNotification('Failed to save letter: ' + error.message, true);
+        });
+}
+
+// Generate a new letter
+function generateLetter() {
+    generateLetterBtn.disabled = true;
+    generateLetterBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    
+    fetch(`${API_BASE}/generate_letter`, {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification(data.error, true);
+                return;
+            }
+            
+            showNotification('Letter generation started. This may take a minute...');
+            
+            // Wait a bit and then reload letters
+            setTimeout(() => {
+                loadLetters();
+                loadCommunityLetters();
+            }, 5000);
+        })
+        .catch(error => {
+            console.error('Error generating letter:', error);
+            showNotification('Failed to generate letter: ' + error.message, true);
+        })
+        .finally(() => {
+            generateLetterBtn.disabled = false;
+            generateLetterBtn.innerHTML = '<i class="fas fa-pen-fancy"></i> Generate Today\'s Letter';
+        });
+}
+
+// Sync letters
+function syncLetters() {
+    syncLettersBtn.disabled = true;
+    syncLettersBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+    
+    fetch(`${API_BASE}/sync_letters_now`, {
+        method: 'POST'
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                showNotification(data.error, true);
+                return;
+            }
+            
+            // Reload data
+            loadLetters();
+            loadCommunityLetters();
+            
+            showNotification('Letters synced successfully');
+        })
+        .catch(error => {
+            console.error('Error syncing letters:', error);
+            showNotification('Failed to sync letters: ' + error.message, true);
+        })
+        .finally(() => {
+            syncLettersBtn.disabled = false;
+            syncLettersBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Sync Letters';
+        });
+}
+
+// Show notification
+function showNotification(message, isError = false) {
+    notificationEl.textContent = message;
+    notificationEl.className = `notification ${isError ? 'error' : ''}`;
+    
+    // Trigger animation
+    setTimeout(() => {
+        notificationEl.classList.add('show');
+    }, 10);
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        notificationEl.classList.remove('show');
+    }, 3000);
+}
+    </script>
+</body>
+</html>

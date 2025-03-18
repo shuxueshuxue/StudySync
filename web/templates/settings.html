@@ -1,0 +1,1040 @@
+<!-- web/templates/settings.html -->
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nova Project - Settings</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            /* Theme variables will be set by JS */
+            --primary-color: #0078D7;
+            --secondary-color: #2AAA8A;
+            --accent-color: #6A0DAD;
+            --bg-color: #1E1E1E;
+            --card-color: #252526;
+            --text-color: #E1E1E1;
+            --border-color: #444444;
+            --hover-color: #2A2A2D;
+            --success-color: #73C991;
+            --warning-color: #DDB100;
+            --danger-color: #F14C4C;
+        }
+        
+        /* Dark theme */
+        html[data-theme='dark'] {
+            --primary-color: #4361ee;
+            --secondary-color: #3ECF8E;
+            --accent-color: #8A2BE2;
+            --bg-color: #121212;
+            --card-color: #1E1E1E;
+            --text-color: #F5F5F5;
+            --border-color: #333333;
+            --hover-color: #252525;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #F44336;
+        }
+        
+        /* Light theme */
+        html[data-theme='light'] {
+            --primary-color: #1976D2;
+            --secondary-color: #009688;
+            --accent-color: #673AB7;
+            --bg-color: #F5F5F5;
+            --card-color: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #E0E0E0;
+            --hover-color: #EEEEEE;
+            --success-color: #4CAF50;
+            --warning-color: #FFC107;
+            --danger-color: #F44336;
+        }
+        
+        /* Custom theme */
+        html[data-theme='custom'] {
+            --primary-color: #FF5722;
+            --secondary-color: #03A9F4;
+            --accent-color: #9C27B0;
+            --bg-color: #FFF8E1;
+            --card-color: #FFFFFF;
+            --text-color: #212121;
+            --border-color: #BDBDBD;
+            --hover-color: #F5F5F5;
+            --success-color: #8BC34A;
+            --warning-color: #FFEB3B;
+            --danger-color: #FF5252;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        .brand {
+            display: flex;
+            align-items: center;
+        }
+        
+        .brand h1 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .brand-icon {
+            margin-right: 15px;
+            color: var(--primary-color);
+            font-size: 2rem;
+        }
+        
+        .nav-links a {
+            color: var(--text-color);
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 4px;
+            transition: background-color 0.2s ease;
+        }
+        
+        .nav-links a:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .nav-links a.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .settings-container {
+            background-color: var(--card-color);
+            border-radius: 8px;
+            padding: 30px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        .settings-header {
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        .settings-header h2 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+        
+        .settings-header-icon {
+            font-size: 1.8rem;
+            margin-right: 15px;
+            color: var(--primary-color);
+        }
+        
+        .form-group {
+            margin-bottom: 25px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        .form-group .help-text {
+            display: block;
+            margin-top: 5px;
+            font-size: 0.85rem;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+        
+        .form-control {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+        }
+        
+        .form-control:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+        
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+        }
+        
+        .btn {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+        }
+        
+        .btn-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .btn-warning {
+            background-color: var(--warning-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+        }
+        
+        .folder-browser {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .folder-browser input {
+            flex-grow: 1;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+        }
+        
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .slider {
+            background-color: var(--secondary-color);
+        }
+        
+        input:focus + .slider {
+            box-shadow: 0 0 1px var(--secondary-color);
+        }
+        
+        input:checked + .slider:before {
+            transform: translateX(26px);
+        }
+        
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .toggle-label {
+            font-weight: bold;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 15px 20px;
+            border-radius: 4px;
+            background-color: var(--success-color);
+            color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .notification.error {
+            background-color: var(--danger-color);
+        }
+        
+        .section-header {
+            margin-top: 40px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .note {
+            padding: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            margin-top: 5px;
+            font-size: 0.9rem;
+            color: #FFA500;
+        }
+        
+        /* Theme switcher */
+        .theme-switcher {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .theme-option {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            position: relative;
+        }
+        
+        .theme-option.active {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+        
+        .theme-light {
+            background: linear-gradient(135deg, #f5f5f5 50%, #e0e0e0 50%);
+        }
+        
+        .theme-dark {
+            background: linear-gradient(135deg, #333333 50%, #121212 50%);
+        }
+        
+        .theme-custom {
+            background: linear-gradient(135deg, #FF5722 50%, #FFF8E1 50%);
+        }
+        
+        /* Icon selector */
+        .icon-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        
+        .icon-option {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--primary-color);
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s ease;
+        }
+        
+        .icon-option:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .icon-option.active {
+            background-color: var(--primary-color);
+            color: white;
+            transform: scale(1.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* New: Settings tabs */
+        .settings-tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-bottom: 1px solid var(--border-color);
+        }
+        
+        .settings-tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .settings-tab.active {
+            border-bottom-color: var(--primary-color);
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        
+        .settings-tab:hover {
+            background-color: var(--hover-color);
+        }
+        
+        .settings-pane {
+            display: none;
+        }
+        
+        .settings-pane.active {
+            display: block;
+        }
+        
+        /* For range inputs */
+        .range-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .range-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: bold;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+            -webkit-appearance: none;
+            height: 8px;
+            background: var(--border-color);
+            border-radius: 4px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: var(--primary-color);
+            cursor: pointer;
+        }
+        
+        /* Dropdown styling */
+        .select-wrapper {
+            position: relative;
+        }
+        
+        .select-wrapper::after {
+            content: "▼";
+            font-size: 0.8rem;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+        
+        select {
+            appearance: none;
+            width: 100%;
+            padding: 10px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        
+        select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="brand">
+                <div class="brand-icon">
+                    <i class="fas fa-lightbulb"></i>
+                </div>
+                <h1>Nova Project</h1>
+            </div>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-calendar-alt"></i> Calendar</a>
+                <a href="/settings" class="active"><i class="fas fa-cog"></i> Settings</a>
+            </div>
+        </header>
+        
+        <div class="settings-container">
+            <div class="settings-header">
+                <div class="settings-header-icon">
+                    <i class="fas fa-cog"></i>
+                </div>
+                <h2>Settings</h2>
+            </div>
+            
+            <!-- Theme Switcher -->
+            <div class="theme-switcher">
+                <span>App Theme:</span>
+                <div class="theme-option theme-light" data-theme="light" title="Light Theme"></div>
+                <div class="theme-option theme-dark" data-theme="dark" title="Dark Theme"></div>
+                <div class="theme-option theme-custom" data-theme="custom" title="Custom Theme"></div>
+            </div>
+            
+            <!-- Tabs for organizing settings -->
+            <div class="settings-tabs">
+                <div class="settings-tab active" data-tab="general">General</div>
+                <div class="settings-tab" data-tab="capture">Screenshot & Analysis</div>
+                <div class="settings-tab" data-tab="letters">Letter Generation</div>
+                <div class="settings-tab" data-tab="models">AI Models</div>
+                <div class="settings-tab" data-tab="sync">Sync & Sharing</div>
+            </div>
+            
+            <form id="settings-form">
+                <!-- General Settings Pane -->
+                <div class="settings-pane active" id="general-pane">
+                    <!-- Icon Selector -->
+                    <div class="form-group">
+                        <label for="app-icon">App Icon</label>
+                        <div class="icon-selector">
+                            <div class="icon-option" data-icon="lightbulb"><i class="fas fa-lightbulb"></i></div>
+                            <div class="icon-option" data-icon="magic"><i class="fas fa-magic"></i></div>
+                            <div class="icon-option" data-icon="star"><i class="fas fa-star"></i></div>
+                            <div class="icon-option" data-icon="compass"><i class="fas fa-compass"></i></div>
+                            <div class="icon-option" data-icon="rocket"><i class="fas fa-rocket"></i></div>
+                        </div>
+                        <span class="help-text">Choose an icon for the Nova Project app.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" class="form-control" placeholder="Your name" value="{{ config.username }}">
+                        <span class="help-text">This name will be displayed to others when you share your letters.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <div class="toggle-container">
+                            <span class="toggle-label">Auto-launch at startup</span>
+                            <label class="switch">
+                                <input type="checkbox" id="auto-launch" {% if config.auto_launch %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <span class="help-text">Start Nova Project automatically when you log in to your computer.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="local-folder">Data Storage Folder</label>
+                        <div class="folder-browser">
+                            <input type="text" id="local-folder" class="form-control" placeholder="Path to your data storage folder" value="{{ config.local_folder }}">
+                        </div>
+                        <span class="help-text">This is the parent folder where all data (letters, screenshots, key points) will be stored. Subfolders will be created automatically for each data type.</span>
+                    </div>
+                </div>
+                
+                <!-- Screenshot & Analysis Settings Pane -->
+                <div class="settings-pane" id="capture-pane">
+                    <div class="form-group">
+                        <label for="screenshot-interval">Screenshot Interval (seconds)</label>
+                        <div class="range-container">
+                            <input type="range" id="screenshot-interval" min="30" max="600" step="30" value="{{ config.screenshot_interval or 120 }}">
+                            <span class="range-value" id="screenshot-interval-value">{{ config.screenshot_interval or 120 }}s</span>
+                        </div>
+                        <span class="help-text">How often screenshots are taken to capture your learning (in seconds).</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="keypoints-threshold">Key Points Extraction Threshold</label>
+                        <div class="range-container">
+                            <input type="range" id="keypoints-threshold" min="5" max="100" step="5" value="{{ config.keypoints_threshold or 30 }}">
+                            <span class="range-value" id="keypoints-threshold-value">{{ config.keypoints_threshold or 30 }} screenshots</span>
+                        </div>
+                        <span class="help-text">Number of screenshots needed before extracting key points.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="screenshot-retention">Screenshot Retention Period (days)</label>
+                        <div class="range-container">
+                            <input type="range" id="screenshot-retention" min="1" max="90" step="1" value="{{ config.screenshot_retention_days or 7 }}">
+                            <span class="range-value" id="screenshot-retention-value">{{ config.screenshot_retention_days or 7 }} days</span>
+                        </div>
+                        <span class="help-text">How long to keep screenshot files (0 means keep indefinitely).</span>
+                    </div>
+                </div>
+                
+                <!-- Letter Generation Settings Pane -->
+                <div class="settings-pane" id="letters-pane">
+                    <div class="form-group">
+                        <label for="letter-generation-time">Daily Letter Generation Time</label>
+                        <input type="time" id="letter-generation-time" class="form-control" value="{{ config.letter_generation_time or '21:00' }}">
+                        <span class="help-text">When Nova will automatically generate the daily summary letter.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="letter-style">Letter Style Customization</label>
+                        <textarea id="letter-style" class="form-control" placeholder="Define custom style for your letters" rows="5">{{ config.letter_style }}</textarea>
+                        <span class="help-text">Define custom styles for your letters (e.g., 'concise', 'technical', 'educational', etc.). This will be used for letter generation.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="letter-language">Letter Language</label>
+                        <input type="text" id="letter-language" class="form-control" placeholder="e.g., English, Spanish, Chinese" value="{{ config.letter_language }}">
+                        <span class="help-text">Specify the language for your letters. Leave empty for default (English).</span>
+                    </div>
+                </div>
+                
+                <!-- AI Models Settings Pane -->
+                <div class="settings-pane" id="models-pane">
+                    <div class="form-group">
+                        <label for="screenshot-model">Screenshot Text Extraction Model</label>
+                        <div class="select-wrapper">
+                            <select id="screenshot-model" class="form-control">
+                                <option value="google/gemma-3-27b-it" {% if config.screenshot_model == 'google/gemma-3-27b-it' %}selected{% endif %}>Gemma 3 (27B)</option>
+                                <option value="openai/gpt-4o" {% if config.screenshot_model == 'openai/gpt-4o' %}selected{% endif %}>GPT-4o</option>
+                                <option value="openai/gpt-4o-mini" {% if config.screenshot_model == 'openai/gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
+                                <option value="anthropic/claude-3-7-sonnet" {% if config.screenshot_model == 'anthropic/claude-3-7-sonnet' %}selected{% endif %}>Claude 3.7 Sonnet</option>
+                            </select>
+                        </div>
+                        <span class="help-text">AI model used to extract text from screenshots.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="keypoints-model">Key Points Extraction Model</label>
+                        <div class="select-wrapper">
+                            <select id="keypoints-model" class="form-control">
+                                <option value="openai/o3-mini" {% if config.keypoints_model == 'openai/o3-mini' %}selected{% endif %}>OpenAI O3 Mini</option>
+                                <option value="google/gemma-3-27b-it" {% if config.keypoints_model == 'google/gemma-3-27b-it' %}selected{% endif %}>Gemma 3 (27B)</option>
+                                <option value="openai/gpt-4o" {% if config.keypoints_model == 'openai/gpt-4o' %}selected{% endif %}>GPT-4o</option>
+                                <option value="openai/gpt-4o-mini" {% if config.keypoints_model == 'openai/gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
+                                <option value="anthropic/claude-3-7-sonnet" {% if config.keypoints_model == 'anthropic/claude-3-7-sonnet' %}selected{% endif %}>Claude 3.7 Sonnet</option>
+                                <option value="deepseek/deepseek-r1" {% if config.keypoints_model == 'deepseek/deepseek-r1' %}selected{% endif %}>Deepseek R1</option>
+                            </select>
+                        </div>
+                        <span class="help-text">AI model used to extract key points from your screenshots.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="letter-model">Letter Generation Model</label>
+                        <div class="select-wrapper">
+                            <select id="letter-model" class="form-control">
+                                <option value="anthropic/claude-3-7-sonnet" {% if config.letter_model == 'anthropic/claude-3-7-sonnet' %}selected{% endif %}>Claude 3.7 Sonnet</option>
+                                <option value="openai/o3-mini" {% if config.letter_model == 'openai/o3-mini' %}selected{% endif %}>OpenAI O3 Mini</option>
+                                <option value="openai/gpt-4o" {% if config.letter_model == 'openai/gpt-4o' %}selected{% endif %}>GPT-4o</option>
+                                <option value="openai/gpt-4o-mini" {% if config.letter_model == 'openai/gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
+                                <option value="google/gemma-3-27b-it" {% if config.letter_model == 'google/gemma-3-27b-it' %}selected{% endif %}>Gemma 3 (27B)</option>
+                                <option value="deepseek/deepseek-r1" {% if config.letter_model == 'deepseek/deepseek-r1' %}selected{% endif %}>Deepseek R1</option>
+                            </select>
+                        </div>
+                        <span class="help-text">AI model used to generate your learning summary letters.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="openrouter-api-key">OpenRouter API Key</label>
+                        <input type="password" id="openrouter-api-key" class="form-control" placeholder="Enter your OpenRouter API key" value="{{ config.openrouter_api_key }}">
+                        <span class="help-text">Required for letter generation and screenshots processing. <a href="https://openrouter.ai/keys" target="_blank" style="color: var(--secondary-color);">Get an API key</a></span>
+                    </div>
+                </div>
+                
+                <!-- Sync & Sharing Settings Pane -->
+                <div class="settings-pane" id="sync-pane">
+                    <div class="form-group">
+                        <div class="toggle-container">
+                            <span class="toggle-label">Auto-sync letters</span>
+                            <label class="switch">
+                                <input type="checkbox" id="auto-sync" {% if config.auto_sync %}checked{% endif %}>
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <span class="help-text">When enabled, your letters will be automatically shared with others when they are generated.</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="shared-folder">Shared Folder Path</label>
+                        <div class="folder-browser">
+                            <input type="text" id="shared-folder" class="form-control" placeholder="Path to your shared folder" value="{{ config.shared_folder }}">
+                        </div>
+                        <span class="help-text">This should be a folder where everyone can access (e.g., a OneDrive shared folder).</span>
+                        <div class="note">
+                            <i class="fas fa-info-circle"></i> Folder selection requires the Nova desktop app. Enter the path manually or use the desktop UI to select folders.
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="sync-frequency">Sync Frequency (minutes)</label>
+                        <div class="range-container">
+                            <input type="range" id="sync-frequency" min="5" max="120" step="5" value="{{ config.sync_frequency_minutes or 15 }}">
+                            <span class="range-value" id="sync-frequency-value">{{ config.sync_frequency_minutes or 15 }} minutes</span>
+                        </div>
+                        <span class="help-text">How often to check for changes in the shared folder.</span>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="button" id="reset-btn" class="btn btn-warning">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i> Save Settings
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <div id="notification" class="notification">
+        <!-- Notification message will be shown here -->
+    </div>
+    
+    <script>
+        const PORT = "{{ port }}";
+        const API_BASE = `http://localhost:${PORT}/api`;
+        
+        // DOM elements
+        const settingsForm = document.getElementById('settings-form');
+        const usernameInput = document.getElementById('username');
+        const autoSyncToggle = document.getElementById('auto-sync');
+        const autoLaunchToggle = document.getElementById('auto-launch');
+        const sharedFolderInput = document.getElementById('shared-folder');
+        const localFolderInput = document.getElementById('local-folder');
+        const letterStyleInput = document.getElementById('letter-style');
+        const letterLanguageInput = document.getElementById('letter-language');
+        const openrouterApiKeyInput = document.getElementById('openrouter-api-key');
+        const resetBtn = document.getElementById('reset-btn');
+        const notificationEl = document.getElementById('notification');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const iconOptions = document.querySelectorAll('.icon-option');
+        const settingsTabs = document.querySelectorAll('.settings-tab');
+        const settingsPanes = document.querySelectorAll('.settings-pane');
+        
+        // New settings elements
+        const screenshotIntervalInput = document.getElementById('screenshot-interval');
+        const screenshotIntervalValue = document.getElementById('screenshot-interval-value');
+        const keypointsThresholdInput = document.getElementById('keypoints-threshold');
+        const keypointsThresholdValue = document.getElementById('keypoints-threshold-value');
+        const screenshotRetentionInput = document.getElementById('screenshot-retention');
+        const screenshotRetentionValue = document.getElementById('screenshot-retention-value');
+        const letterGenerationTimeInput = document.getElementById('letter-generation-time');
+        const syncFrequencyInput = document.getElementById('sync-frequency');
+        const syncFrequencyValue = document.getElementById('sync-frequency-value');
+        const screenshotModelSelect = document.getElementById('screenshot-model');
+        const keypointsModelSelect = document.getElementById('keypoints-model');
+        const letterModelSelect = document.getElementById('letter-model');
+        
+        // Original values for reset
+        const originalValues = {
+            username: "{{ config.username }}",
+            autoSync: {{ 'true' if config.auto_sync else 'false' }},
+            autoLaunch: {{ 'true' if config.auto_launch else 'false' }},
+            sharedFolder: "{{ config.shared_folder }}",
+            localFolder: "{{ config.local_folder }}",
+            letterStyle: "{{ config.letter_style }}",
+            letterLanguage: "{{ config.letter_language }}",
+            openrouterApiKey: "{{ config.openrouter_api_key }}",
+            appIcon: "{{ config.app_icon or 'lightbulb' }}",
+            screenshotInterval: {{ config.screenshot_interval or 120 }},
+            keypointsThreshold: {{ config.keypoints_threshold or 30 }},
+            screenshotRetention: {{ config.screenshot_retention_days or 7 }},
+            letterGenerationTime: "{{ config.letter_generation_time or '21:00' }}",
+            syncFrequency: {{ config.sync_frequency_minutes or 15 }},
+            screenshotModel: "{{ config.screenshot_model or 'google/gemma-3-27b-it' }}",
+            keypointsModel: "{{ config.keypoints_model or 'openai/o3-mini' }}",
+            letterModel: "{{ config.letter_model or 'anthropic/claude-3-7-sonnet' }}"
+        };
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            settingsForm.addEventListener('submit', saveSettings);
+            resetBtn.addEventListener('click', resetForm);
+            
+            // Initialize theme
+            initTheme();
+            
+            // Initialize icon
+            initIcon();
+            
+            // Theme switcher
+            themeOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const theme = option.getAttribute('data-theme');
+                    setTheme(theme);
+                });
+            });
+            
+            // Icon selector
+            iconOptions.forEach(option => {
+                option.addEventListener('click', () => {
+                    const icon = option.getAttribute('data-icon');
+                    setIcon(icon);
+                });
+            });
+            
+            // Settings tabs
+            settingsTabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabId = tab.getAttribute('data-tab');
+                    setActiveTab(tabId);
+                });
+            });
+            
+            // Range input updates
+            screenshotIntervalInput.addEventListener('input', () => {
+                screenshotIntervalValue.textContent = `${screenshotIntervalInput.value}s`;
+            });
+            
+            keypointsThresholdInput.addEventListener('input', () => {
+                keypointsThresholdValue.textContent = `${keypointsThresholdInput.value} screenshots`;
+            });
+            
+            screenshotRetentionInput.addEventListener('input', () => {
+                screenshotRetentionValue.textContent = `${screenshotRetentionInput.value} days`;
+            });
+            
+            syncFrequencyInput.addEventListener('input', () => {
+                syncFrequencyValue.textContent = `${syncFrequencyInput.value} minutes`;
+            });
+        });
+        
+        // Set active tab
+        function setActiveTab(tabId) {
+            // Update tabs
+            settingsTabs.forEach(tab => {
+                if (tab.getAttribute('data-tab') === tabId) {
+                    tab.classList.add('active');
+                } else {
+                    tab.classList.remove('active');
+                }
+            });
+            
+            // Update panes
+            settingsPanes.forEach(pane => {
+                if (pane.id === `${tabId}-pane`) {
+                    pane.classList.add('active');
+                } else {
+                    pane.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize theme
+        function initTheme() {
+            const savedTheme = localStorage.getItem('nova-theme') || 'light';
+            setTheme(savedTheme);
+        }
+        
+        // Set theme
+        function setTheme(theme) {
+            document.documentElement.setAttribute('data-theme', theme);
+            localStorage.setItem('nova-theme', theme);
+            
+            // Update theme option active state
+            themeOptions.forEach(option => {
+                if (option.getAttribute('data-theme') === theme) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+        }
+        
+        // Initialize icon
+        function initIcon() {
+            const savedIcon = localStorage.getItem('nova-icon') || originalValues.appIcon || 'lightbulb';
+            setIcon(savedIcon);
+        }
+        
+        // Set icon
+        function setIcon(icon) {
+            localStorage.setItem('nova-icon', icon);
+            
+            // Update icon option active state
+            iconOptions.forEach(option => {
+                if (option.getAttribute('data-icon') === icon) {
+                    option.classList.add('active');
+                } else {
+                    option.classList.remove('active');
+                }
+            });
+            
+            // Update header icon
+            const brandIcon = document.querySelector('.brand-icon i');
+            brandIcon.className = ''; // Clear classes
+            brandIcon.classList.add('fas', `fa-${icon}`);
+        }
+
+        // Save settings
+        function saveSettings(event) {
+            event.preventDefault();
+            
+            const data = {
+                username: usernameInput.value.trim(),
+                auto_sync: autoSyncToggle.checked,
+                auto_launch: autoLaunchToggle.checked,
+                shared_folder: sharedFolderInput.value.trim(),
+                local_folder: localFolderInput.value.trim(),
+                letter_style: letterStyleInput.value.trim(),
+                letter_language: letterLanguageInput.value.trim(),
+                openrouter_api_key: openrouterApiKeyInput.value.trim(),
+                app_icon: localStorage.getItem('nova-icon') || 'lightbulb',
+                screenshot_interval: parseInt(screenshotIntervalInput.value),
+                keypoints_threshold: parseInt(keypointsThresholdInput.value),
+                screenshot_retention_days: parseInt(screenshotRetentionInput.value),
+                letter_generation_time: letterGenerationTimeInput.value,
+                sync_frequency_minutes: parseInt(syncFrequencyInput.value),
+                screenshot_model: screenshotModelSelect.value,
+                keypoints_model: keypointsModelSelect.value,
+                letter_model: letterModelSelect.value
+            };
+            
+            fetch(`${API_BASE}/settings`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+                .then(response => response.json())
+                .then(result => {
+                    if (result.error) {
+                        showNotification(result.error, true);
+                        return;
+                    }
+                    
+                    showNotification('Settings saved successfully');
+                    
+                    // Update original values
+                    Object.assign(originalValues, {
+                        username: data.username,
+                        autoSync: data.auto_sync,
+                        autoLaunch: data.auto_launch,
+                        sharedFolder: data.shared_folder,
+                        localFolder: data.local_folder,
+                        letterStyle: data.letter_style,
+                        letterLanguage: data.letter_language,
+                        openrouterApiKey: data.openrouter_api_key,
+                        appIcon: data.app_icon,
+                        screenshotInterval: data.screenshot_interval,
+                        keypointsThreshold: data.keypoints_threshold,
+                        screenshotRetention: data.screenshot_retention_days,
+                        letterGenerationTime: data.letter_generation_time,
+                        syncFrequency: data.sync_frequency_minutes,
+                        screenshotModel: data.screenshot_model,
+                        keypointsModel: data.keypoints_model,
+                        letterModel: data.letter_model
+                    });
+                })
+                .catch(error => {
+                    console.error('Error saving settings:', error);
+                    showNotification('Failed to save settings', true);
+                });
+        }
+        
+        // Reset form to original values
+        function resetForm() {
+            usernameInput.value = originalValues.username;
+            autoSyncToggle.checked = originalValues.autoSync === true;
+            autoLaunchToggle.checked = originalValues.autoLaunch === true;
+            sharedFolderInput.value = originalValues.sharedFolder;
+            localFolderInput.value = originalValues.localFolder;
+            letterStyleInput.value = originalValues.letterStyle;
+            letterLanguageInput.value = originalValues.letterLanguage;
+            openrouterApiKeyInput.value = originalValues.openrouterApiKey;
+            
+            // Reset new input values
+            screenshotIntervalInput.value = originalValues.screenshotInterval;
+            screenshotIntervalValue.textContent = `${originalValues.screenshotInterval}s`;
+            
+            keypointsThresholdInput.value = originalValues.keypointsThreshold;
+            keypointsThresholdValue.textContent = `${originalValues.keypointsThreshold} screenshots`;
+            
+            screenshotRetentionInput.value = originalValues.screenshotRetention;
+            screenshotRetentionValue.textContent = `${originalValues.screenshotRetention} days`;
+            
+            letterGenerationTimeInput.value = originalValues.letterGenerationTime;
+            
+            syncFrequencyInput.value = originalValues.syncFrequency;
+            syncFrequencyValue.textContent = `${originalValues.syncFrequency} minutes`;
+            
+            screenshotModelSelect.value = originalValues.screenshotModel;
+            keypointsModelSelect.value = originalValues.keypointsModel;
+            letterModelSelect.value = originalValues.letterModel;
+            
+            // Reset icon
+            setIcon(originalValues.appIcon);
+            
+            showNotification('Form reset to saved values');
+        }
+        
+        // Show notification
+        function showNotification(message, isError = false) {
+            notificationEl.textContent = message;
+            notificationEl.className = `notification ${isError ? 'error' : ''}`;
+            
+            // Trigger animation
+            setTimeout(() => {
+                notificationEl.classList.add('show');
+            }, 10);
+            
+            // Hide after 3 seconds
+            setTimeout(() => {
+                notificationEl.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
