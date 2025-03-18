@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
-# combine_project.py - Combines all project files into a single file for easier LLM processing
-
-# use pyinstaller --clean nova.spec to pack up
+# combine_project.py - Combines all project files into a single file for easier LLM debugging
 
 import os
 import re
