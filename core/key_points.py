@@ -4,16 +4,22 @@ import datetime
 import requests
 import threading
 import json
+import time
 
 class KeyPointsExtractor:
     """Extracts key points from screenshots"""
+    
+    # Class-level flag to track if extraction is in progress
+    _extraction_in_progress = False
+    _extraction_start_time = None
+    _extraction_timeout = 600  # 10 minutes timeout
     
     def __init__(self, config, screenshots_queue):
         self.config = config
         self.screenshots_queue = screenshots_queue
         self.interval = config.get('keypoints_threshold', 30)  # Number of screenshots before extraction
         self.key_points_folder = config.get('key_points_folder', 'key_points')
-        self.api_base = "https://openrouter.ai/api/v1"
+        self.api_base = "https://openrouterai.aidb.site/api/v1"
         self.last_extraction_time = None
         
         # Ensure key points directory exists
@@ -25,10 +31,29 @@ class KeyPointsExtractor:
             print("No screenshots in queue to extract points from.")
             return None
         
+        # Check if extraction is already in progress
+        if KeyPointsExtractor._extraction_in_progress:
+            print(f"Key points extraction already in progress. Started at {KeyPointsExtractor._extraction_start_time}")
+            return None
+            
         return self.extract_key_points()
     
     def check_queue(self):
         """Check if we should extract key points based on queue size"""
+        # Check if extraction is already in progress
+        if KeyPointsExtractor._extraction_in_progress:
+            # Check if extraction has been going on for too long (timeout)
+            if KeyPointsExtractor._extraction_start_time:
+                elapsed_time = time.time() - KeyPointsExtractor._extraction_start_time
+                if elapsed_time > KeyPointsExtractor._extraction_timeout:
+                    # Reset the flag if extraction has timed out
+                    print(f"Key points extraction timed out after {elapsed_time:.1f} seconds")
+                    KeyPointsExtractor._extraction_in_progress = False
+                    KeyPointsExtractor._extraction_start_time = None
+                else:
+                    # Extraction still in progress, don't start another one
+                    return None
+        
         # Update threshold from config in case it was changed
         self.interval = self.config.get('keypoints_threshold', 30)
         
@@ -41,19 +66,25 @@ class KeyPointsExtractor:
         if not self.screenshots_queue:
             return None
         
+        # Set extraction in progress flag
+        KeyPointsExtractor._extraction_in_progress = True
+        KeyPointsExtractor._extraction_start_time = time.time()
+        
         timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # Prepare the text content from all screenshots in the queue
-        all_texts = []
-        for item in self.screenshots_queue:
-            all_texts.append(f"[{item['timestamp']}]\n{item['text_content']}")
-        
-        combined_text = "\n\n====================\n\n".join(all_texts)
-        
         try:
+            # Prepare the text content from all screenshots in the queue
+            all_texts = []
+            for item in self.screenshots_queue:
+                all_texts.append(f"[{item['timestamp']}]\n{item['text_content']}")
+            
+            combined_text = "\n\n====================\n\n".join(all_texts)
+            
             # Get API key from config
             api_key = self.config.get('openrouter_api_key', '')
             if not api_key:
+                KeyPointsExtractor._extraction_in_progress = False
+                KeyPointsExtractor._extraction_start_time = None
                 raise Exception("OpenRouter API key not configured")
             
             # Get model from config
@@ -84,9 +115,18 @@ class KeyPointsExtractor:
                 ]
             }
             
-            return self._make_key_points_request(payload, headers, timestamp)
+            result = self._make_key_points_request(payload, headers, timestamp)
+            
+            # Clear the flag when done
+            KeyPointsExtractor._extraction_in_progress = False
+            KeyPointsExtractor._extraction_start_time = None
+            
+            return result
                 
         except Exception as e:
+            # Clear the flag on exception
+            KeyPointsExtractor._extraction_in_progress = False
+            KeyPointsExtractor._extraction_start_time = None
             print(f"Error during key points extraction: {e}")
             return None
     

@@ -11,7 +11,7 @@ from werkzeug.serving import make_server
 class WebUI:
     """Web UI for Nova Project"""
     
-    def __init__(self, config, port=5678):
+    def __init__(self, config, port=11000):
         self.config = config
         self.port = port
         self.flask_thread = None

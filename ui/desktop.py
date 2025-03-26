@@ -619,12 +619,21 @@ class DesktopUI:
         """Check if key points should be extracted based on queue size"""
         if self.stop_event.is_set():
             return
-            
+                
         # Get the current queue
         queue = self.screenshot_manager.get_queue()
         
         # Update the key_points_extractor's queue reference
         self.key_points_extractor.screenshots_queue = queue
+        
+        # Check if extraction is already in progress
+        if hasattr(self.key_points_extractor, '_extraction_in_progress') and self.key_points_extractor._extraction_in_progress:
+            # Log status but don't start another extraction
+            if hasattr(self.key_points_extractor, '_extraction_start_time') and self.key_points_extractor._extraction_start_time:
+                elapsed_time = time.time() - self.key_points_extractor._extraction_start_time
+                if elapsed_time > 60:  # Only log if it's been running for more than a minute
+                    print(f"Key points extraction already in progress for {elapsed_time:.1f} seconds")
+            return
         
         # Check if we have enough screenshots to extract key points
         if len(queue) >= self.key_points_extractor.interval:
@@ -633,19 +642,27 @@ class DesktopUI:
             self.action_history.insert(0, action)
             action.status = ActionStatus.PROCESSING
             
-            try:
-                key_points_file = self.key_points_extractor.extract_key_points()
-                if key_points_file:
-                    action.status = ActionStatus.COMPLETED
-                    action.result = f"Key points extracted to {os.path.basename(key_points_file)}"
-                    self.window.flash_status("Key points extracted", "#73C991")
-                else:
+            # Run extraction in a separate thread to prevent UI freezing
+            def extract_thread():
+                try:
+                    key_points_file = self.key_points_extractor.extract_key_points()
+                    if key_points_file:
+                        action.status = ActionStatus.COMPLETED
+                        action.result = f"Key points extracted to {os.path.basename(key_points_file)}"
+                        self.window.flash_status("Key points extracted", "#73C991")
+                    else:
+                        action.status = ActionStatus.FAILED
+                        action.error = "Failed to extract key points"
+                        self.window.flash_status("Failed to extract key points", "#F14C4C")
+                except Exception as e:
                     action.status = ActionStatus.FAILED
-                    action.error = "Failed to extract key points"
-            except Exception as e:
-                action.status = ActionStatus.FAILED
-                action.error = str(e)
-                self.window.flash_status(f"Error extracting key points: {str(e)[:30]}", "#F14C4C")
+                    action.error = str(e)
+                    self.window.flash_status(f"Error extracting key points: {str(e)[:30]}", "#F14C4C")
+            
+            # Create and start thread inside the same scope as the function definition
+            thread = threading.Thread(target=extract_thread)
+            thread.daemon = True
+            thread.start()
 
     def show(self):
         """Show the main window"""

@@ -18,7 +18,7 @@ class ScreenshotManager:
         self.queue = []
         self.stop_event = threading.Event()
         self.screenshots_folder = config.get('screenshots_folder', 'screenshots')
-        self.api_base = "https://openrouter.ai/api/v1"
+        self.api_base = "https://openrouterai.aidb.site/api/v1"
         
         # Ensure screenshots directory exists
         # os.makedirs(self.screenshots_folder, exist_ok=True)

@@ -12,7 +12,7 @@ from core.screenshot import ScreenshotManager
 from data.config import ConfigManager
 from ui.desktop import DesktopUI
 from ui.web import WebUI
-from util.helpers import parse_date, ensure_directory
+from util.helpers import parse_date, ensure_directory, find_available_port, save_port_to_file, read_port_from_file, is_port_available
 from core.letter import LetterGenerator
 from core.key_points import KeyPointsExtractor
 from core.sync import SyncManager
@@ -107,12 +107,31 @@ def main():
     parser.add_argument('--letter', type=str, help='Generate Nova letter for a specific date (YYYY-MM-DD, or "today"/"yesterday")')
     parser.add_argument('--extract-now', action='store_true', help='Force extraction of key points from current queue')
     parser.add_argument('--show', action='store_true', help='Show the UI at startup (default: hidden in system tray)')
-    parser.add_argument('--port', type=int, default=5678, help='Web server port (default: 5678)')
+    parser.add_argument('--port', type=int, default=None, help='Web server port (default: auto-select in range 11000-12000)')
     parser.add_argument('--web-only', action='store_true', help='Run only the web server without the desktop UI')
     parser.add_argument('--check-config', action='store_true', help='Check configuration and exit')
     parser.add_argument('--no-morning-launch', action='store_true', help='Disable auto-launching web UI in the morning')
     
     args = parser.parse_args()
+    
+    # Port selection logic
+    if args.port is None:
+        # Try to read previously used port
+        port = read_port_from_file()
+        
+        if port is None or not is_port_available(port):
+            # Find and save a new port
+            try:
+                port = find_available_port(start_range=11000, end_range=12000)
+                save_port_to_file(port)
+                print(f"✓ Found available port: {port}")
+            except RuntimeError as e:
+                print(f"Warning: {e}")
+                # Fall back to a default port if no available port found
+                port = 5678
+                print(f"Falling back to default port: {port}")
+    else:
+        port = args.port
     
     # Load configuration
     config_manager = ConfigManager()
@@ -155,16 +174,16 @@ def main():
 ╚═══════════════════════════════════════════════╝
 
 ✓ Starting Nova Project...
-✓ Web UI available at: http://localhost:{args.port}
+✓ Web UI available at: http://localhost:{port}
 ✓ Desktop UI {'disabled' if args.web_only else 'running in system tray'}
 """)
     
     # Handle web-only mode
     if args.web_only:
-        web_ui = WebUI(config, port=args.port)
+        web_ui = WebUI(config, port=port)
         
         # Check if we should auto-launch the web UI for morning review
-        check_morning_web_ui_launch(config, args.port)
+        check_morning_web_ui_launch(config, port)
         
         web_ui.start_in_main_thread()
         return
@@ -199,7 +218,7 @@ def main():
         return
     
     # Regular mode with desktop and web UI
-    web_ui = WebUI(config, port=args.port)
+    web_ui = WebUI(config, port=port)
     desktop_ui = DesktopUI(config, web_ui, screenshot_manager, key_points_extractor, letter_generator, sync_manager)
     
     # Start components
@@ -232,7 +251,7 @@ def main():
         print("✓ Web UI started")
         
         # Check if we should auto-launch the web UI for morning review
-        web_ui_launched = check_morning_web_ui_launch(config, args.port)
+        web_ui_launched = check_morning_web_ui_launch(config, port)
         
         # Set UI visibility (only show if explicitly requested or not auto-launched in morning)
         if args.show:
@@ -243,7 +262,7 @@ def main():
             print("✓ Desktop UI is running in the system tray")
         
         # Don't open web UI automatically to minimize disturbance
-        print(f"✓ Web UI available at: http://localhost:{args.port}")
+        print(f"✓ Web UI available at: http://localhost:{port}")
         print(f"✓ Access Nova via the system tray icon")
         
         # Set up signal handlers for proper cleanup

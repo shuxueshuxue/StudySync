@@ -19,7 +19,7 @@ class LetterGenerator:
     def __init__(self, config):
         self.config = config
         self.letters_folder = config.get('local_folder', 'nova_letters')
-        self.api_base = "https://openrouter.ai/api/v1"
+        self.api_base = "https://openrouterai.aidb.site/api/v1"
         
         # Ensure letters directory exists
         os.makedirs(self.letters_folder, exist_ok=True)
@@ -186,54 +186,75 @@ class LetterGenerator:
                 model = self.config.get('letter_model', 'anthropic/claude-3-7-sonnet')
                 
                 # Customize the system prompt based on language and style
-                system_prompt = "You are Nova, a learning assistant who monitors a user's learning activities. "
+                system_prompt = "You are Nova, the user's personal secretary. "
                 
                 # Add language instruction if specified
                 if letter_language and letter_language.lower() != "english":
-                    system_prompt += f"You write educational recaps in {letter_language}. "
+                    system_prompt += f"You write daily work recaps in {letter_language}. "
                 else:
-                    system_prompt += "You write educational recaps in English. "
+                    system_prompt += "You write daily work recaps in English. "
                 
                 # Add style instruction if specified
                 if letter_style:
                     system_prompt += f"Your writing style should be {letter_style}. "
                 else:
-                    system_prompt += "Focus on knowledge and insights rather than emotional encouragement. "
+                    system_prompt += "Focus on knowledge and insights."
                 
                 # Create letter template once to avoid duplication
                 letter_template = f"""
-                As the user's personal secretary, create an educational letter for the user.
+As the user's personal secretary, create a comprehensive, inspirational letter for him/her about today's work.
+Today is {today_formatted}.
 
-                Today is {today_formatted}.
+STRUCTURE AND CONTENT REQUIREMENTS:
+1. FORMAT:
+   - First line: Add tags as "tags: tag1, tag2, tag3, tag4, tag5" (extract 5 relevant tags from the content)
+   - Second line: Add a title as "# Title"
+   - Use proper markdown formatting throughout (headings, lists, code blocks, math expressions)
+   - Minimum length: 2000+ words
 
-                Your letter should:
-                1. Begin with a brief, emotional inspiring greeting
-                2. Based what the user's learning and doing today, review important knowledge concepts, specific facts
-                3. Provide an analysis and deeper insights on them
-                4. Include 2-3 thoughtful, interesting exercises related to the content (but not too heavy)
-                5. For each exercise, provide a detailed solution immediately after the exercise
-                6. Close with a brief, emotional inspiring sign-off
-                
-                Important: Focus on substantive content rather than motivational fluff. Prioritize knowledge, insights, and useful exercises over compliments.                       
-                Recent learning activity:
-                {' '.join([kp["content"] for kp in key_points])}
+2. INTRODUCTION:
+   - Begin with a warm greeting
+   - Provide a brief overview of today's focus
+   - Include a thought-provoking quote or insight related to the topic
 
-                {previous_letters_summary}
+3. CORE CONCEPTS:
+   - Identify 5-7 fundamental concepts / knowledge details related to the user's recent learning
+   - For each concept:
+      * Provide a clear definition
+      * Include an illustrative example or analogy
+   - Balance technical accuracy with self-containability
+   - Include at least one (could be more) diagram description or visual concept
 
-                THE MOST IMPORTANT: Please return the letter in MARKDOWN format!
+4. PRACTICAL EXERCISES:
+   - Include 3-4 diverse exercises that challenge different aspects of understanding
+   - For each exercise:
+      * Clearly state the objective
+      * Provide necessary context and parameters
+      * Include a detailed, step-by-step solution with explanations
+      * Add reflection questions after the solution
 
-                First line: Add tags as "tags: tag1, tag2, tag3" (extract 3-5 relevant tags from the content)
-                Second line: Add a title as "# Title of Letter"
-                Then proceed with the letter content in markdown. But don't wrap the content in a markdown code block.
+5. HISTORICAL CONTEXT & REAL APPLICATION:
+   - Share the life story of a key figure/company/association that created this knowledge
+   - OR
+   - Detail a classic real-world application where a specific person used these concepts to solve a concrete problem
+   - Include specific names, dates, challenges faced, and outcomes achieved
 
-                Make sure exercises do not repeat content from previous letters.
-                
-                Use standard markdown features:
-                - Headings with #, ##, ###
-                - Lists with *, -, or numbers
-                - Code blocks with ```
-                - Math expressions with $ and $$ for inline and display math
-                """
+6. CONCLUSION:
+   - Summarize key takeaways
+   - Provide an intellectually motivating closing message
+   - Suggest 1-2 specific resources for further exploration
+   - End with a warm, professional sign-off
+
+IMPORTANT GUIDELINES:
+- Feel free to use sophisticated HTML elements within the markdown for better illustrations and visual effects (tables, callouts, etc.)
+- Balance self-contained educational content with personalization
+- Ensure 50% of content is universally valuable even without context of user's specific learning
+- Don't repeat content from previous letters (or instead you can try to extend them): {previous_letters_summary}
+- This is the user's learning today: {' '.join([kp["content"] for kp in key_points])}
+
+THE MOST IMPORTANT: Return the letter in MARKDOWN format!
+Do not wrap the content in a markdown code block.
+"""
                 
                 # Try generating with the main model
                 markdown_content = self._call_api_for_letter(model, api_key, system_prompt, letter_template)
@@ -301,13 +322,13 @@ class LetterGenerator:
             print(f"Error with model {model}: {e}")
             return None
     
-    def _save_letter(self, markdown_content, date_str):
+    def _save_letter(self, markdown_content: str, date_str):
         """Save the markdown content as a letter"""
         letter_file = os.path.join(self.letters_folder, f"nova_letter_{date_str}.md")
         
         try:
             with open(letter_file, "w", encoding="utf-8") as f:
-                f.write(markdown_content)
+                f.write(markdown_content.strip())
             
             print(f"Nova's letter generated and saved to {letter_file}")
             
@@ -320,7 +341,7 @@ class LetterGenerator:
             # Automatically open the letter in the web browser
             auto_open = self.config.get('auto_open_letter', True)
             if auto_open:
-                web_url = f'http://localhost:5678/#letter/{date_str}'
+                web_url = f'http://localhost:11000/#letter/{date_str}'
                 try:
                     print(f"Opening letter in web browser: {web_url}")
                     webbrowser.open(web_url)
@@ -328,7 +349,7 @@ class LetterGenerator:
                     print(f"Error opening letter in browser: {e}")
             else:
                 # Just display the URL without opening
-                print(f"Letter can be viewed through the web UI at http://localhost:5678/#letter/{date_str}")
+                print(f"Letter can be viewed through the web UI at http://localhost:11000/#letter/{date_str}")
             
             # Reset the generation flag now that we've finished
             LetterGenerator._is_generating = False

@@ -1,6 +1,6 @@
 # Nova Project - Combined Source Code
 
-# Generated on: 2025-03-18 00:05:17
+# Generated on: 2025-03-21 11:19:56
 
 # This file contains the combined source code of the Nova Project
 
@@ -496,13 +496,13 @@ class LetterGenerator:
             print(f"Error with model {model}: {e}")
             return None
     
-    def _save_letter(self, markdown_content, date_str):
+    def _save_letter(self, markdown_content: str, date_str):
         """Save the markdown content as a letter"""
         letter_file = os.path.join(self.letters_folder, f"nova_letter_{date_str}.md")
         
         try:
             with open(letter_file, "w", encoding="utf-8") as f:
-                f.write(markdown_content)
+                f.write(markdown_content.strip())
             
             print(f"Nova's letter generated and saved to {letter_file}")
             
@@ -1360,7 +1360,7 @@ def get_default_config():
         "sync_frequency_minutes": 15,
         "screenshot_model": "google/gemma-3-27b-it",
         "keypoints_model": "deepseek/deepseek-r1",
-        "letter_model": "anthropic/claude-3-7-sonnet",
+        "letter_model": "deepseek/deepseek-r1",
         "openrouter_api_key": ""
     }
 
@@ -1510,7 +1510,7 @@ from core.screenshot import ScreenshotManager
 from data.config import ConfigManager
 from ui.desktop import DesktopUI
 from ui.web import WebUI
-from util.helpers import parse_date, ensure_directory
+from util.helpers import parse_date, ensure_directory, find_available_port, save_port_to_file, read_port_from_file, is_port_available
 from core.letter import LetterGenerator
 from core.key_points import KeyPointsExtractor
 from core.sync import SyncManager
@@ -1605,12 +1605,31 @@ def main():
     parser.add_argument('--letter', type=str, help='Generate Nova letter for a specific date (YYYY-MM-DD, or "today"/"yesterday")')
     parser.add_argument('--extract-now', action='store_true', help='Force extraction of key points from current queue')
     parser.add_argument('--show', action='store_true', help='Show the UI at startup (default: hidden in system tray)')
-    parser.add_argument('--port', type=int, default=5678, help='Web server port (default: 5678)')
+    parser.add_argument('--port', type=int, default=None, help='Web server port (default: auto-select in range 11000-12000)')
     parser.add_argument('--web-only', action='store_true', help='Run only the web server without the desktop UI')
     parser.add_argument('--check-config', action='store_true', help='Check configuration and exit')
     parser.add_argument('--no-morning-launch', action='store_true', help='Disable auto-launching web UI in the morning')
     
     args = parser.parse_args()
+    
+    # Port selection logic
+    if args.port is None:
+        # Try to read previously used port
+        port = read_port_from_file()
+        
+        if port is None or not is_port_available(port):
+            # Find and save a new port
+            try:
+                port = find_available_port(start_range=11000, end_range=12000)
+                save_port_to_file(port)
+                print(f"✓ Found available port: {port}")
+            except RuntimeError as e:
+                print(f"Warning: {e}")
+                # Fall back to a default port if no available port found
+                port = 5678
+                print(f"Falling back to default port: {port}")
+    else:
+        port = args.port
     
     # Load configuration
     config_manager = ConfigManager()
@@ -1653,16 +1672,16 @@ def main():
 ╚═══════════════════════════════════════════════╝
 
 ✓ Starting Nova Project...
-✓ Web UI available at: http://localhost:{args.port}
+✓ Web UI available at: http://localhost:{port}
 ✓ Desktop UI {'disabled' if args.web_only else 'running in system tray'}
 """)
     
     # Handle web-only mode
     if args.web_only:
-        web_ui = WebUI(config, port=args.port)
+        web_ui = WebUI(config, port=port)
         
         # Check if we should auto-launch the web UI for morning review
-        check_morning_web_ui_launch(config, args.port)
+        check_morning_web_ui_launch(config, port)
         
         web_ui.start_in_main_thread()
         return
@@ -1697,7 +1716,7 @@ def main():
         return
     
     # Regular mode with desktop and web UI
-    web_ui = WebUI(config, port=args.port)
+    web_ui = WebUI(config, port=port)
     desktop_ui = DesktopUI(config, web_ui, screenshot_manager, key_points_extractor, letter_generator, sync_manager)
     
     # Start components
@@ -1730,7 +1749,7 @@ def main():
         print("✓ Web UI started")
         
         # Check if we should auto-launch the web UI for morning review
-        web_ui_launched = check_morning_web_ui_launch(config, args.port)
+        web_ui_launched = check_morning_web_ui_launch(config, port)
         
         # Set UI visibility (only show if explicitly requested or not auto-launched in morning)
         if args.show:
@@ -1741,7 +1760,7 @@ def main():
             print("✓ Desktop UI is running in the system tray")
         
         # Don't open web UI automatically to minimize disturbance
-        print(f"✓ Web UI available at: http://localhost:{args.port}")
+        print(f"✓ Web UI available at: http://localhost:{port}")
         print(f"✓ Access Nova via the system tray icon")
         
         # Set up signal handlers for proper cleanup
@@ -2398,7 +2417,7 @@ class DesktopUI:
         """Check if key points should be extracted based on queue size"""
         if self.stop_event.is_set():
             return
-            
+                
         # Get the current queue
         queue = self.screenshot_manager.get_queue()
         
@@ -2412,19 +2431,27 @@ class DesktopUI:
             self.action_history.insert(0, action)
             action.status = ActionStatus.PROCESSING
             
-            try:
-                key_points_file = self.key_points_extractor.extract_key_points()
-                if key_points_file:
-                    action.status = ActionStatus.COMPLETED
-                    action.result = f"Key points extracted to {os.path.basename(key_points_file)}"
-                    self.window.flash_status("Key points extracted", "#73C991")
-                else:
+            # Run extraction in a separate thread to prevent UI freezing
+            def extract_thread():
+                try:
+                    key_points_file = self.key_points_extractor.extract_key_points()
+                    if key_points_file:
+                        action.status = ActionStatus.COMPLETED
+                        action.result = f"Key points extracted to {os.path.basename(key_points_file)}"
+                        self.window.flash_status("Key points extracted", "#73C991")
+                    else:
+                        action.status = ActionStatus.FAILED
+                        action.error = "Failed to extract key points"
+                        self.window.flash_status("Failed to extract key points", "#F14C4C")
+                except Exception as e:
                     action.status = ActionStatus.FAILED
-                    action.error = "Failed to extract key points"
-            except Exception as e:
-                action.status = ActionStatus.FAILED
-                action.error = str(e)
-                self.window.flash_status(f"Error extracting key points: {str(e)[:30]}", "#F14C4C")
+                    action.error = str(e)
+                    self.window.flash_status(f"Error extracting key points: {str(e)[:30]}", "#F14C4C")
+            
+            # Create and start thread inside the same scope as the function definition
+            thread = threading.Thread(target=extract_thread)
+            thread.daemon = True
+            thread.start()
 
     def show(self):
         """Show the main window"""
@@ -3313,6 +3340,103 @@ class WebUI:
 ## File: util\helpers.py
 
 ```python
+import socket
+import subprocess
+import re
+import os
+import tempfile
+import platform
+
+def get_excluded_port_ranges():
+    """Get the current TCP excluded port ranges dynamically"""
+    if platform.system() != 'Windows':
+        return []  # Currently only implemented for Windows
+    
+    try:
+        # Run the netsh command to get current exclusions
+        result = subprocess.run(
+            ["netsh", "interface", "ipv4", "show", "excludedportrange", "protocol=tcp"], 
+            capture_output=True, 
+            text=True, 
+            check=True
+        )
+        
+        # Parse the output to extract port ranges
+        ranges = []
+        lines = result.stdout.split('\n')
+        for line in lines:
+            # Look for lines with port ranges
+            match = re.search(r'^\s*(\d+)\s+(\d+)', line)
+            if match:
+                start = int(match.group(1))
+                end = int(match.group(2))
+                ranges.append((start, end))
+        
+        return ranges
+    except Exception as e:
+        print(f"Warning: Could not get excluded port ranges: {e}")
+        return []  # Return empty list if command fails
+
+def is_port_excluded(port):
+    """Check if a port is in the excluded ranges"""
+    for start, end in get_excluded_port_ranges():
+        if start <= port <= end:
+            return True
+    return False
+
+def is_port_available(port):
+    """Check if a specific port is available"""
+    if is_port_excluded(port):
+        return False
+        
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+            s.bind(('localhost', port))
+            return True
+    except OSError:
+        return False
+
+def find_available_port(start_range=11000, end_range=12000):
+    """Find a port that's available and not in excluded ranges"""
+    for port in range(start_range, end_range):
+        if is_port_excluded(port):
+            continue
+            
+        # Also check if port is actually bindable
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('localhost', port))
+                return port
+        except OSError:
+            continue
+            
+    raise RuntimeError(f"No available ports found in range {start_range}-{end_range}")
+
+def save_port_to_file(port, filename=None):
+    """Save the port number to a file in a standard location"""
+    if filename is None:
+        # Use a standard filename in the temp directory
+        filename = os.path.join(tempfile.gettempdir(), "nova_app_port.txt")
+    
+    try:
+        with open(filename, 'w') as f:
+            f.write(str(port))
+        return filename
+    except Exception as e:
+        print(f"Warning: Could not save port to file: {e}")
+        return None
+
+def read_port_from_file(filename=None):
+    """Read the port number from a file"""
+    if filename is None:
+        filename = os.path.join(tempfile.gettempdir(), "nova_app_port.txt")
+    
+    try:
+        with open(filename, 'r') as f:
+            return int(f.read().strip())
+    except Exception:
+        return None
+
 # util/helpers.py
 import datetime
 
@@ -3409,47 +3533,63 @@ def ensure_directory(path):
         :root {
             /* Theme variables will be set in CSS */
             /* Light theme (default) */
-            --primary-color: #0078D7;
-            --secondary-color: #2AAA8A;
-            --accent-color: #6A0DAD;
-            --bg-color: #1E1E1E;
-            --card-color: #252526;
-            --text-color: #E1E1E1;
-            --border-color: #444444;
-            --hover-color: #2A2A2D;
-            --success-color: #73C991;
-            --warning-color: #DDB100;
-            --danger-color: #F14C4C;
+            --primary-color: #4361ee;
+            --secondary-color: #3ECF8E;
+            --accent-color: #7B2CBF;
+            --bg-color: #F8F9FA;
+            --card-color: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #E0E0E0;
+            --hover-color: #F1F3F9;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+            --muted-color: #6c757d;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            --font-mono: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
         }
         
         /* Dark theme */
         html[data-theme='dark'] {
-            --primary-color: #4361ee;
-            --secondary-color: #3ECF8E;
-            --accent-color: #8A2BE2;
-            --bg-color: #121212;
-            --card-color: #1E1E1E;
-            --text-color: #F5F5F5;
-            --border-color: #333333;
-            --hover-color: #252525;
-            --success-color: #4CAF50;
-            --warning-color: #FFC107;
-            --danger-color: #F44336;
+            --primary-color: #6366F1;
+            --secondary-color: #10B981;
+            --accent-color: #8B5CF6;
+            --bg-color: #111827;
+            --card-color: #1F2937;
+            --text-color: #F9FAFB;
+            --border-color: #374151;
+            --hover-color: #2D3748;
+            --success-color: #059669;
+            --warning-color: #D97706;
+            --danger-color: #DC2626;
+            --muted-color: #9CA3AF;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.5);
         }
         
         /* Light theme */
         html[data-theme='light'] {
-            --primary-color: #1976D2;
-            --secondary-color: #009688;
-            --accent-color: #673AB7;
-            --bg-color: #F5F5F5;
+            --primary-color: #4361ee;
+            --secondary-color: #3ECF8E;
+            --accent-color: #7B2CBF;
+            --bg-color: #F8F9FA;
             --card-color: #FFFFFF;
             --text-color: #333333;
             --border-color: #E0E0E0;
-            --hover-color: #EEEEEE;
+            --hover-color: #F1F3F9;
             --success-color: #4CAF50;
-            --warning-color: #FFC107;
+            --warning-color: #FF9800;
             --danger-color: #F44336;
+            --muted-color: #6c757d;
         }
         
         /* Custom theme */
@@ -3465,29 +3605,50 @@ def ensure_directory(path):
             --success-color: #8BC34A;
             --warning-color: #FFEB3B;
             --danger-color: #FF5252;
+            --muted-color: #9E9E9E;
         }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
         
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            font-size: 16px;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+        }
+        
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 20px;
         }
         
         header {
+            background-color: var(--card-color);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color var(--transition-normal);
+        }
+        
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
+            max-width: 1280px;
+            margin: 0 auto;
         }
         
         .brand {
@@ -3497,22 +3658,31 @@ def ensure_directory(path):
         
         .brand h1 {
             margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--primary-color);
+            transition: color var(--transition-normal);
         }
         
         .brand-icon {
             margin-right: 15px;
             color: var(--primary-color);
-            font-size: 2rem;
+            font-size: 1.8rem;
+            transition: color var(--transition-normal);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.75rem;
         }
         
         .nav-links a {
             color: var(--text-color);
             text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            font-weight: 500;
         }
         
         .nav-links a:hover {
@@ -3524,82 +3694,100 @@ def ensure_directory(path):
             color: white;
         }
         
-
-/* Copy button styling */
-.copy-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.markdown-body pre {
-    position: relative;
-}
-
-.markdown-body pre:hover .copy-button {
-    opacity: 1;
-}
-
-.copy-button:hover {
-    background-color: var(--accent-color);
-}
-
-.copy-button.copied {
-    background-color: var(--success-color);
-}
-
+        /* Copy button styling */
+        .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity var(--transition-fast), background-color var(--transition-fast);
+        }
+        
+        .markdown-body pre {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        
+        .markdown-body pre:hover .copy-button {
+            opacity: 1;
+        }
+        
+        .copy-button:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .copy-button.copied {
+            background-color: var(--success-color);
+        }
+        
         .main-content {
             display: grid;
             grid-template-columns: 1fr 3fr;
-            gap: 20px;
+            gap: 24px;
         }
         
         .sidebar {
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
             height: fit-content;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal), box-shadow var(--transition-normal);
         }
         
         .sidebar h2 {
             margin-top: 0;
             color: var(--primary-color);
             font-size: 1.2rem;
-            margin-bottom: 15px;
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .sidebar-actions {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 1.5rem;
         }
         
         .btn {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s ease;
+            font-weight: 600;
+            transition: background-color var(--transition-fast), transform var(--transition-fast);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: var(--shadow-sm);
+            font-size: 0.9rem;
         }
         
         .btn:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .btn-success {
@@ -3620,102 +3808,144 @@ def ensure_directory(path):
         
         .calendar-view {
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal), box-shadow var(--transition-normal);
         }
         
         .calendar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
         
         .calendar-header h2 {
             margin: 0;
             color: var(--primary-color);
+            font-size: 1.4rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .calendar-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
         .calendar-days-container {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
         
         .calendar-day-header {
             text-align: center;
-            font-weight: bold;
-            padding: 10px;
+            font-weight: 600;
+            padding: 8px;
             color: var(--text-color);
+            font-size: 0.85rem;
         }
         
         .calendar-day {
-            background-color: var(--bg-color);
-            border-radius: 4px;
-            min-height: 80px;
-            padding: 10px;
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            min-height: 100px;
+            padding: 8px;
             position: relative;
-            transition: background-color 0.2s ease;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-sm);
         }
         
         .calendar-day:hover {
-            background-color: var(--hover-color);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
         }
         
         .calendar-day-number {
-            position: absolute;
-            top: 5px;
-            right: 8px;
             font-size: 0.85rem;
-            opacity: 0.7;
+            font-weight: 500;
+            color: var(--muted-color);
+            margin-bottom: 6px;
         }
         
         .day-content {
-            margin-top: 20px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
+            margin-top: 10px;
         }
         
-        .letter-badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+        .letter-card {
+            padding: 8px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            text-align: center;
             position: relative;
+            display: flex;
+            flex-direction: column;
+            transition: all var(--transition-fast);
+            border: 1px solid transparent;
         }
         
-        .letter-badge.mine {
-            background-color: var(--primary-color);
+        .letter-card:hover {
+            transform: translateY(-2px);
         }
         
-        .letter-badge.shared {
-            background-color: var(--secondary-color);
+        .letter-card.mine {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: rgba(67, 97, 238, 0.3);
         }
         
-        .letter-badge.not-shared {
-            background-color: var(--bg-color);
-            border: 1px solid var(--primary-color);
-            opacity: 0.7;
+        .letter-card.mine:hover {
+            background-color: rgba(67, 97, 238, 0.15);
         }
         
-        .letter-badge .user-initials {
-            opacity: 0.8;
-            margin-right: 3px;
+        .letter-card.shared {
+            background-color: rgba(62, 207, 142, 0.1);
+            border-color: rgba(62, 207, 142, 0.3);
+        }
+        
+        .letter-card.shared:hover {
+            background-color: rgba(62, 207, 142, 0.15);
+        }
+        
+        .letter-card.not-shared {
+            background-color: rgba(200, 200, 200, 0.1);
+            border-color: rgba(200, 200, 200, 0.3);
+        }
+        
+        .letter-card.not-shared:hover {
+            background-color: rgba(200, 200, 200, 0.15);
+        }
+        
+        .letter-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        
+        .letter-card-title {
+            font-weight: 500;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .letter-card-author {
+            font-size: 0.75rem;
+            color: var(--muted-color);
         }
         
         .letter-preview {
@@ -3725,10 +3955,11 @@ def ensure_directory(path):
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             padding: 20px;
             overflow-y: auto;
+            backdrop-filter: blur(5px);
         }
         
         .letter-preview-content {
@@ -3736,9 +3967,11 @@ def ensure_directory(path):
             max-width: 900px;
             margin: 40px auto;
             padding: 30px;
-            border-radius: 8px;
+            border-radius: var(--radius-lg);
             position: relative;
             color: var(--text-color);
+            box-shadow: var(--shadow-lg);
+            transition: background-color var(--transition-normal);
         }
         
         .letter-preview-content h1,
@@ -3755,6 +3988,11 @@ def ensure_directory(path):
             color: white;
             cursor: pointer;
             z-index: 1001;
+            transition: transform var(--transition-fast);
+        }
+        
+        .close-preview:hover {
+            transform: rotate(90deg);
         }
         
         .letter-actions {
@@ -3767,44 +4005,65 @@ def ensure_directory(path):
         
         .badge {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
             background-color: var(--primary-color);
             color: white;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background-color: var(--success-color);
+        }
+        
+        .badge-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
         }
         
         .user-list {
-            margin-top: 20px;
+            margin-top: 1.5rem;
         }
         
         .user-list h3 {
             margin-top: 0;
             font-size: 1rem;
             color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .user-item {
             display: flex;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            transition: background-color var(--transition-fast);
         }
         
-        .user-item:last-child {
-            border-bottom: none;
+        .user-item:hover {
+            background-color: var(--hover-color);
         }
         
         .user-avatar {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background-color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 10px;
-            font-weight: bold;
+            margin-right: 12px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.85rem;
+            transition: background-color var(--transition-normal);
         }
         
         .user-name {
@@ -3820,30 +4079,32 @@ def ensure_directory(path):
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: background-color var(--transition-normal);
         }
 
         .tooltip {
             position: relative;
-            display: inline-block;
         }
 
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 120px;
-            background-color: #333;
+            width: 150px;
+            background-color: rgba(0, 0, 0, 0.8);
             color: #fff;
             text-align: center;
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
             position: absolute;
             z-index: 1;
             bottom: 125%;
             left: 50%;
-            margin-left: -60px;
+            margin-left: -75px;
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 0.8rem;
+            pointer-events: none;
         }
 
         .tooltip:hover .tooltiptext {
@@ -3858,7 +4119,7 @@ def ensure_directory(path):
         }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             border-top: 4px solid var(--primary-color);
             width: 40px;
@@ -3874,10 +4135,20 @@ def ensure_directory(path):
 
         .today {
             border: 2px solid var(--primary-color);
+            background-color: var(--card-color);
+            box-shadow: var(--shadow-md);
         }
 
         .empty-day {
-            opacity: 0.3;
+            opacity: 0.4;
+            background-color: transparent;
+            border: 1px dashed var(--border-color);
+            box-shadow: none;
+        }
+        
+        .empty-day:hover {
+            transform: none;
+            box-shadow: none;
         }
 
         .notification {
@@ -3885,14 +4156,15 @@ def ensure_directory(path):
             bottom: 20px;
             right: 20px;
             padding: 15px 20px;
-            border-radius: 4px;
+            border-radius: var(--radius-md);
             background-color: var(--success-color);
             color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-md);
             z-index: 1000;
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.3s ease;
+            max-width: 350px;
         }
 
         .notification.show {
@@ -3910,6 +4182,7 @@ def ensure_directory(path):
             height: calc(100vh - 150px);
             border: none;
             background-color: var(--card-color);
+            border-radius: var(--radius-md);
         }
 
         /* Theme switcher */
@@ -3917,20 +4190,21 @@ def ensure_directory(path):
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 10px;
-            margin-top: 15px;
+            padding: 12px;
+            margin-top: 20px;
             background-color: var(--bg-color);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
         }
         
         .theme-option {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
             position: relative;
+            transition: all var(--transition-fast);
         }
         
         .theme-option.active {
@@ -3951,12 +4225,12 @@ def ensure_directory(path):
         }
         
         .edit-mode-toggle {
-            margin-top: 10px;
-            padding: 10px;
+            margin-top: 12px;
+            padding: 12px;
             display: flex;
             align-items: center;
             background-color: var(--bg-color);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
         }
         
@@ -3968,7 +4242,7 @@ def ensure_directory(path):
         .switch {
             position: relative;
             display: inline-block;
-            width: 48px;
+            width: 50px;
             height: 24px;
         }
         
@@ -3993,10 +4267,10 @@ def ensure_directory(path):
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
@@ -4007,37 +4281,46 @@ def ensure_directory(path):
         }
         
         input:checked + .slider:before {
-            transform: translateX(24px);
+            transform: translateX(26px);
         }
 
         /* Editor styles */
         .letter-editor {
             display: none;
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
             position: relative;
+            box-shadow: var(--shadow-md);
+            margin-top: 20px;
+            transition: background-color var(--transition-normal);
         }
         
         .editor-actions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 1rem;
         }
         
         .editor-textarea {
             width: 100%;
             min-height: 500px;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Consolas', monospace;
+            font-family: var(--font-mono);
             font-size: 14px;
             line-height: 1.6;
             resize: vertical;
+            transition: border-color var(--transition-fast);
+        }
+        
+        .editor-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
         }
         
         /* Full page letter view */
@@ -4063,17 +4346,21 @@ def ensure_directory(path):
             position: sticky;
             top: 0;
             z-index: 10;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal);
         }
         
         .letter-page-title {
             color: var(--primary-color);
             margin: 0;
             font-size: 1.2rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .letter-page-actions {
             display: flex;
-            gap: 15px;
+            gap: 12px;
         }
         
         .letter-page-content {
@@ -4086,25 +4373,27 @@ def ensure_directory(path):
             position: fixed;
             top: 70px;
             right: 20px;
-            width: 250px;
+            width: 260px;
             max-height: calc(100vh - 100px);
             background-color: var(--card-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
             padding: 15px;
             overflow-y: auto;
             z-index: 1005;
             border: 1px solid var(--border-color);
             display: none;
+            transition: background-color var(--transition-normal);
         }
         
         .toc-title {
             font-size: 1rem;
             font-weight: 600;
             color: var(--primary-color);
-            margin-bottom: 10px;
-            padding-bottom: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border-color);
+            transition: color var(--transition-normal);
         }
         
         .toc-list {
@@ -4114,16 +4403,16 @@ def ensure_directory(path):
         }
         
         .toc-item {
-            margin: 8px 0;
+            margin: 6px 0;
         }
         
         .toc-link {
             color: var(--text-color);
             text-decoration: none;
             display: block;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            transition: background-color var(--transition-fast);
             font-size: 0.9rem;
         }
         
@@ -4157,14 +4446,16 @@ def ensure_directory(path):
         /* Code block styling enhancements */
         .markdown-body pre {
             background-color: var(--bg-color);
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
             padding: 1em;
             overflow: auto;
             margin: 1em 0;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal);
         }
         
         .markdown-body code {
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.9em;
             padding: 0.2em 0.4em;
             border-radius: 3px;
@@ -4176,30 +4467,188 @@ def ensure_directory(path):
             padding: 0;
             border-radius: 0;
         }
+        
+        /* Quick Action Button */
+        .quick-action-btn {
+            position: fixed;
+            right: 30px;
+            bottom: 30px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: var(--secondary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-lg);
+            cursor: pointer;
+            z-index: 90;
+            transition: transform var(--transition-fast), background-color var(--transition-fast);
+        }
+        
+        .quick-action-btn:hover {
+            transform: scale(1.1);
+        }
+        
+        .quick-action-menu {
+            position: fixed;
+            right: 30px;
+            bottom: 100px;
+            display: none;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 90;
+        }
+        
+        .quick-action-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: var(--card-color);
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            cursor: pointer;
+            transition: transform var(--transition-fast), background-color var(--transition-fast);
+            position: relative;
+        }
+        
+        .quick-action-item:hover {
+            transform: scale(1.1);
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .quick-action-item .tooltiptext {
+            right: 60px;
+            bottom: 10px;
+            left: auto;
+            margin-left: 0;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+            color: var(--muted-color);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--border-color);
+        }
+        
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
 
+        /* Media queries for responsiveness */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr 2fr;
+            }
+        }
+        
         @media (max-width: 768px) {
             .main-content {
                 grid-template-columns: 1fr;
+                gap: 16px;
             }
             
+            .sidebar {
+                order: 2;
+            }
+            
+            .calendar-view {
+                order: 1;
+            }
+            
+            .calendar-day {
+                min-height: 80px;
+            }
+            
+            .toc-container {
+                display: none !important;
+                width: 100%;
+                left: 0;
+                right: 0;
+                top: 0;
+                border-radius: 0;
+            }
+            
+            .letter-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .letter-page-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .letter-page-content {
+                padding: 20px 15px;
+            }
+            
+            .quick-action-btn {
+                right: 20px;
+                bottom: 20px;
+            }
+        }
+        
+        @media (max-width: 576px) {
             .calendar-grid,
             .calendar-days-container {
                 grid-template-columns: repeat(7, 1fr);
+                gap: 4px;
             }
             
             .calendar-day {
                 min-height: 60px;
+                padding: 5px;
             }
             
-            .toc-container {
-                display: none;
+            .calendar-day-header {
+                font-size: 0.7rem;
+                padding: 4px;
+            }
+            
+            .letter-card {
+                padding: 4px;
+            }
+            
+            .letter-card-title {
+                font-size: 0.8rem;
+            }
+            
+            .letter-card-author {
+                font-size: 0.7rem;
+            }
+            
+            .brand h1 {
+                font-size: 1.2rem;
+            }
+            
+            .nav-links a {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <header>
+        <div class="header-content">
             <div class="brand">
                 <div class="brand-icon">
                     {% if app_icon == "lightbulb" %}
@@ -4222,8 +4671,10 @@ def ensure_directory(path):
                 <a href="/" class="active"><i class="fas fa-calendar-alt"></i> Calendar</a>
                 <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
             </div>
-        </header>
-        
+        </div>
+    </header>
+    
+    <div class="container">
         <div class="main-content">
             <div class="sidebar">
                 <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
@@ -4301,6 +4752,26 @@ def ensure_directory(path):
         </div>
     </div>
     
+    <!-- Quick Action Button -->
+    <div class="quick-action-btn" id="quick-action-toggle">
+        <i class="fas fa-plus"></i>
+    </div>
+    
+    <div class="quick-action-menu" id="quick-action-menu">
+        <div class="quick-action-item tooltip" id="quick-generate" title="Generate Letter">
+            <i class="fas fa-pen-fancy"></i>
+            <span class="tooltiptext">Generate Letter</span>
+        </div>
+        <div class="quick-action-item tooltip" id="quick-sync" title="Sync Letters">
+            <i class="fas fa-sync-alt"></i>
+            <span class="tooltiptext">Sync Letters</span>
+        </div>
+        <div class="quick-action-item tooltip" id="quick-screenshot" title="Take Screenshot">
+            <i class="fas fa-camera"></i>
+            <span class="tooltiptext">Take Screenshot</span>
+        </div>
+    </div>
+    
     <!-- Letter Edit Mode -->
     <div id="letter-editor" class="letter-editor">
         <h2>Edit Letter</h2>
@@ -4324,7 +4795,7 @@ def ensure_directory(path):
                     <i class="fas fa-edit"></i> Edit
                 </button>
                 <button id="toggle-toc" class="btn">
-                    <i class="fas fa-list"></i> Toggle TOC
+                    <i class="fas fa-list"></i> Table of Contents
                 </button>
                 <button id="close-letter-page" class="btn btn-warning">
                     <i class="fas fa-times"></i> Close
@@ -4387,6 +4858,11 @@ const closeLettterPageBtn = document.getElementById('close-letter-page');
 const editLetterBtn = document.getElementById('edit-letter');
 const toggleTocBtn = document.getElementById('toggle-toc');
 const notificationEl = document.getElementById('notification');
+const quickActionToggleBtn = document.getElementById('quick-action-toggle');
+const quickActionMenu = document.getElementById('quick-action-menu');
+const quickGenerateBtn = document.getElementById('quick-generate');
+const quickSyncBtn = document.getElementById('quick-sync');
+const quickScreenshotBtn = document.getElementById('quick-screenshot');
 
 // State variables
 let myLetters = [];
@@ -4394,6 +4870,7 @@ let communityLetters = {};
 let currentEditLetter = null;
 let editMode = true;
 let currentDate = new Date();
+let quickActionsVisible = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     // Configure marked.js with syntax highlighting
@@ -4472,9 +4949,50 @@ document.addEventListener('DOMContentLoaded', () => {
     
     toggleTocBtn.addEventListener('click', toggleTableOfContents);
     
+    // Quick action buttons
+    quickActionToggleBtn.addEventListener('click', toggleQuickActions);
+    quickGenerateBtn.addEventListener('click', () => {
+        generateLetter();
+        toggleQuickActions();
+    });
+    quickSyncBtn.addEventListener('click', () => {
+        syncLetters();
+        toggleQuickActions();
+    });
+    quickScreenshotBtn.addEventListener('click', () => {
+        showNotification("This feature requires the desktop app");
+        toggleQuickActions();
+    });
+    
+    // Close quick actions menu when clicking elsewhere
+    document.addEventListener('click', (e) => {
+        if (quickActionsVisible && 
+            !e.target.closest('#quick-action-toggle') && 
+            !e.target.closest('#quick-action-menu')) {
+            toggleQuickActions(false);
+        }
+    });
+    
     // Check for letter hash in URL
     checkForLetterInUrl();
 });
+
+// Toggle quick actions menu
+function toggleQuickActions(forcedState) {
+    if (forcedState !== undefined) {
+        quickActionsVisible = forcedState;
+    } else {
+        quickActionsVisible = !quickActionsVisible;
+    }
+    
+    if (quickActionsVisible) {
+        quickActionMenu.style.display = 'flex';
+        quickActionToggleBtn.innerHTML = '<i class="fas fa-times"></i>';
+    } else {
+        quickActionMenu.style.display = 'none';
+        quickActionToggleBtn.innerHTML = '<i class="fas fa-plus"></i>';
+    }
+}
 
 // Hide the table of contents
 function hideTOC() {
@@ -4673,7 +5191,7 @@ function loadCommunityLetters() {
 // Populate calendar with letter data
 function populateCalendarWithLetters() {
     // Clear existing letter badges
-    document.querySelectorAll('.letter-badge').forEach(badge => badge.remove());
+    document.querySelectorAll('.letter-card').forEach(card => card.remove());
     
     // Add my letters
     myLetters.forEach(letter => {
@@ -4683,23 +5201,37 @@ function populateCalendarWithLetters() {
         if (dayEl) {
             const dayContent = dayEl.querySelector('.day-content');
             
-            const letterBadge = document.createElement('div');
-            letterBadge.className = `letter-badge ${letter.synced ? 'shared' : 'not-shared'}`;
-            letterBadge.innerHTML = `<span class="user-initials">Me</span>`;
-            letterBadge.setAttribute('data-date', dateStr);
-            letterBadge.setAttribute('data-user', USERNAME);
-            letterBadge.setAttribute('data-synced', letter.synced);
-            letterBadge.setAttribute('data-format', letter.format || 'unknown');
+            const letterCard = document.createElement('div');
+            letterCard.className = `letter-card ${letter.synced ? 'shared' : 'not-shared'} mine`;
             
-            // Add tooltip
-            const tooltip = document.createElement('span');
-            tooltip.className = 'tooltiptext';
-            tooltip.textContent = letter.synced ? 'Your shared letter' : 'Your private letter';
-            letterBadge.classList.add('tooltip');
-            letterBadge.appendChild(tooltip);
+            const cardHeader = document.createElement('div');
+            cardHeader.className = 'letter-card-header';
             
-            letterBadge.addEventListener('click', () => openLetter(dateStr, USERNAME, true));
-            dayContent.appendChild(letterBadge);
+            const cardTitle = document.createElement('div');
+            cardTitle.className = 'letter-card-title';
+            cardTitle.textContent = 'Your Letter';
+            
+            const letterBadge = document.createElement('span');
+            letterBadge.className = 'badge';
+            letterBadge.textContent = letter.format === 'markdown' ? 'MD' : 'HTML';
+            
+            cardHeader.appendChild(cardTitle);
+            cardHeader.appendChild(letterBadge);
+            
+            const cardAuthor = document.createElement('div');
+            cardAuthor.className = 'letter-card-author';
+            cardAuthor.textContent = letter.synced ? 'Shared' : 'Private';
+            
+            letterCard.appendChild(cardHeader);
+            letterCard.appendChild(cardAuthor);
+            
+            letterCard.setAttribute('data-date', dateStr);
+            letterCard.setAttribute('data-user', USERNAME);
+            letterCard.setAttribute('data-synced', letter.synced);
+            letterCard.setAttribute('data-format', letter.format || 'unknown');
+            
+            letterCard.addEventListener('click', () => openLetter(dateStr, USERNAME, true));
+            dayContent.appendChild(letterCard);
         }
     });
     
@@ -4713,24 +5245,46 @@ function populateCalendarWithLetters() {
                 if (dayEl) {
                     const dayContent = dayEl.querySelector('.day-content');
                     
-                    const letterBadge = document.createElement('div');
-                    letterBadge.className = 'letter-badge shared';
-                    letterBadge.innerHTML = `<span class="user-initials">${getInitials(username)}</span>`;
-                    letterBadge.setAttribute('data-date', dateStr);
-                    letterBadge.setAttribute('data-user', username);
-                    letterBadge.setAttribute('data-format', letter.format || 'unknown');
+                    const letterCard = document.createElement('div');
+                    letterCard.className = 'letter-card shared';
                     
-                    // Add tooltip
-                    const tooltip = document.createElement('span');
-                    tooltip.className = 'tooltiptext';
-                    tooltip.textContent = `${username}'s letter`;
-                    letterBadge.classList.add('tooltip');
-                    letterBadge.appendChild(tooltip);
+                    const cardHeader = document.createElement('div');
+                    cardHeader.className = 'letter-card-header';
                     
-                    letterBadge.addEventListener('click', () => openLetter(dateStr, username, false));
-                    dayContent.appendChild(letterBadge);
+                    const cardTitle = document.createElement('div');
+                    cardTitle.className = 'letter-card-title';
+                    cardTitle.textContent = 'Community Letter';
+                    
+                    const letterBadge = document.createElement('span');
+                    letterBadge.className = 'badge badge-accent';
+                    letterBadge.textContent = letter.format === 'markdown' ? 'MD' : 'HTML';
+                    
+                    cardHeader.appendChild(cardTitle);
+                    cardHeader.appendChild(letterBadge);
+                    
+                    const cardAuthor = document.createElement('div');
+                    cardAuthor.className = 'letter-card-author';
+                    cardAuthor.textContent = `by ${username}`;
+                    
+                    letterCard.appendChild(cardHeader);
+                    letterCard.appendChild(cardAuthor);
+                    
+                    letterCard.setAttribute('data-date', dateStr);
+                    letterCard.setAttribute('data-user', username);
+                    letterCard.setAttribute('data-format', letter.format || 'unknown');
+                    
+                    letterCard.addEventListener('click', () => openLetter(dateStr, username, false));
+                    dayContent.appendChild(letterCard);
                 }
             });
+        }
+    });
+    
+    // Add empty state for days with no content
+    document.querySelectorAll('.calendar-day:not(.empty-day)').forEach(dayEl => {
+        const dayContent = dayEl.querySelector('.day-content');
+        if (!dayContent.children.length && !dayEl.classList.contains('empty-day')) {
+            dayContent.innerHTML = ''; // Clear existing content
         }
     });
 }
@@ -4746,6 +5300,7 @@ function renderUserList() {
     const currentUserAvatar = document.createElement('div');
     currentUserAvatar.className = 'user-avatar';
     currentUserAvatar.textContent = getInitials(USERNAME);
+    currentUserAvatar.style.backgroundColor = 'var(--primary-color)';
     
     const currentUserName = document.createElement('div');
     currentUserName.className = 'user-name';
@@ -4761,14 +5316,25 @@ function renderUserList() {
     userListContainerEl.appendChild(currentUserItem);
     
     // Add other community users
-    Object.keys(communityLetters).forEach(username => {
-        if (username !== USERNAME) {
+    const communityUsers = Object.keys(communityLetters).filter(username => username !== USERNAME);
+    
+    if (communityUsers.length) {
+        communityUsers.forEach((username, index) => {
             const userItem = document.createElement('div');
             userItem.className = 'user-item';
             
             const userAvatar = document.createElement('div');
             userAvatar.className = 'user-avatar';
             userAvatar.textContent = getInitials(username);
+            // Assign different colors to different users
+            const avatarColors = [
+                'var(--accent-color)', 
+                'var(--secondary-color)', 
+                '#E91E63', 
+                '#FF9800', 
+                '#9C27B0'
+            ];
+            userAvatar.style.backgroundColor = avatarColors[index % avatarColors.length];
             
             const userName = document.createElement('div');
             userName.className = 'user-name';
@@ -4782,16 +5348,15 @@ function renderUserList() {
             userItem.appendChild(userName);
             userItem.appendChild(userLetterCount);
             userListContainerEl.appendChild(userItem);
-        }
-    });
-    
-    // If no other users, show a message
-    if (Object.keys(communityLetters).length <= 1) {
+        });
+    } else {
+        // If no other users, show a message
         const noUsersEl = document.createElement('div');
-        noUsersEl.textContent = 'No other users have shared letters yet';
-        noUsersEl.style.padding = '10px 0';
-        noUsersEl.style.color = '#999';
-        noUsersEl.style.fontStyle = 'italic';
+        noUsersEl.className = 'empty-state';
+        noUsersEl.innerHTML = `
+            <div class="empty-state-icon"><i class="fas fa-users-slash"></i></div>
+            <div class="empty-state-text">No other users have shared letters yet</div>
+        `;
         userListContainerEl.appendChild(noUsersEl);
     }
 }
@@ -4824,8 +5389,9 @@ function openLetter(dateStr, username, isMyLetter) {
         })
         .then(data => {
             if (data.error) {
-                letterPageContentEl.innerHTML = `<div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                    <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                letterPageContentEl.innerHTML = `<div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="empty-state-text">${data.error}</div>
                 </div>`;
                 return;
             }
@@ -4839,8 +5405,12 @@ function openLetter(dateStr, username, isMyLetter) {
                 format: data.format || 'markdown'
             };
             
-            // Show edit button only if edit mode is enabled
-            editLetterBtn.style.display = editMode ? 'block' : 'none';
+            // Update letter page title
+            document.querySelector('.letter-page-title').textContent = 
+                `Letter from ${username} - ${formatDateForDisplay(dateStr)}`;
+            
+            // Show edit button only if edit mode is enabled and it's the user's letter
+            editLetterBtn.style.display = (editMode && isMyLetter) ? 'block' : 'none';
             
             // Check if it's markdown or HTML
             if (data.format === 'markdown' || data.content.trim().startsWith('#') || data.content.indexOf('\n## ') > -1) {
@@ -4858,9 +5428,10 @@ function openLetter(dateStr, username, isMyLetter) {
         })
         .catch(error => {
             console.error('Error loading letter:', error);
-            letterPageContentEl.innerHTML = `<div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                <i class="fas fa-exclamation-triangle"></i> Failed to load letter: ${error.message}
-                <p>Please try again or check the browser console for details.</p>
+            letterPageContentEl.innerHTML = `<div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="empty-state-text">Failed to load letter: ${error.message}</div>
+                <button class="btn btn-accent" onclick="window.location.reload()">Reload Page</button>
             </div>`;
         });
 }
@@ -4910,7 +5481,7 @@ function renderMarkdownLetter(markdownContent, dateStr, username, isMyLetter) {
                         </div>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 6px; max-width: 40%;">
-                        ${tags.map(tag => `<span style="padding: 4px 8px; background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); border-radius: 4px; font-size: 0.8rem;">${tag}</span>`).join('')}
+                        ${tags.map(tag => `<span class="badge badge-accent">${tag}</span>`).join('')}
                     </div>
                 </div>
                 
@@ -4943,59 +5514,58 @@ function renderMarkdownLetter(markdownContent, dateStr, username, isMyLetter) {
             }
                
             // Initialize syntax highlighting
-try {
-    // Force re-highlighting of all code blocks
-    document.querySelectorAll('pre code').forEach((block) => {
-        // Add default class if none exists
-        if (!block.className) {
-            block.className = 'language-plaintext';
-        }
-        hljs.highlightElement(block);
-        
-        // Add copy button to each code block
-        const pre = block.parentNode;
-        const copyButton = document.createElement('button');
-        copyButton.className = 'copy-button';
-        copyButton.textContent = 'Copy';
-        
-        copyButton.addEventListener('click', () => {
-            // Copy code to clipboard
-            const code = block.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                // Visual feedback
-                copyButton.textContent = 'Copied!';
-                copyButton.classList.add('copied');
-                
-                // Reset after 2 seconds
-                setTimeout(() => {
+            try {
+                // Force re-highlighting of all code blocks
+                document.querySelectorAll('pre code').forEach((block) => {
+                    // Add default class if none exists
+                    if (!block.className) {
+                        block.className = 'language-plaintext';
+                    }
+                    hljs.highlightElement(block);
+                    
+                    // Add copy button to each code block
+                    const pre = block.parentNode;
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'copy-button';
                     copyButton.textContent = 'Copy';
-                    copyButton.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                copyButton.textContent = 'Error';
-                setTimeout(() => {
-                    copyButton.textContent = 'Copy';
-                }, 2000);
-            });
-        });
-        
-        pre.appendChild(copyButton);
-    });
-} catch (syntaxError) {
-    console.warn("Syntax highlighting error (safely handled):", syntaxError);
-}
+                    
+                    copyButton.addEventListener('click', () => {
+                        // Copy code to clipboard
+                        const code = block.textContent;
+                        navigator.clipboard.writeText(code).then(() => {
+                            // Visual feedback
+                            copyButton.textContent = 'Copied!';
+                            copyButton.classList.add('copied');
+                            
+                            // Reset after 2 seconds
+                            setTimeout(() => {
+                                copyButton.textContent = 'Copy';
+                                copyButton.classList.remove('copied');
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('Failed to copy: ', err);
+                            copyButton.textContent = 'Error';
+                            setTimeout(() => {
+                                copyButton.textContent = 'Copy';
+                            }, 2000);
+                        });
+                    });
+                    
+                    pre.appendChild(copyButton);
+                });
+            } catch (syntaxError) {
+                console.warn("Syntax highlighting error (safely handled):", syntaxError);
+            }
 
         }, 100);
     } catch (e) {
         console.error("Error rendering markdown:", e);
         letterPageContentEl.innerHTML = `
-            <div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                <i class="fas fa-exclamation-triangle"></i> 
-                Error rendering markdown: ${e.message}
-                <p>The content will be displayed as raw text below:</p>
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="empty-state-text">Error rendering markdown: ${e.message}</div>
+                <pre style="white-space: pre-wrap; overflow-wrap: break-word; padding: 20px; background: var(--bg-color); color: var(--text-color); margin-top: 20px; border-radius: 4px; max-height: 300px; overflow-y: auto;">${markdownContent}</pre>
             </div>
-            <pre style="white-space: pre-wrap; overflow-wrap: break-word; padding: 20px; background: #f5f5f5; color: #333; margin-top: 20px; border-radius: 4px;">${markdownContent}</pre>
         `;
     }
 }
@@ -5022,6 +5592,7 @@ function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
             iframe.style.width = '100%';
             iframe.style.height = 'calc(100vh - 100px)';
             iframe.style.border = 'none';
+            iframe.style.borderRadius = 'var(--radius-md)';
             
             safeContainer.appendChild(iframe);
             
@@ -5033,9 +5604,9 @@ function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
             } catch (iframeError) {
                 console.error("Error with iframe rendering:", iframeError);
                 safeContainer.innerHTML = `
-                    <div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                        <i class="fas fa-exclamation-triangle"></i> 
-                        Error rendering HTML in iframe. 
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="empty-state-text">Error rendering HTML in iframe.</div>
                         <p>Attempting direct rendering instead.</p>
                     </div>
                 `;
@@ -5081,9 +5652,9 @@ function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
     } catch (e) {
         console.error("Error rendering HTML:", e);
         letterPageContentEl.innerHTML = `
-            <div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                <i class="fas fa-exclamation-triangle"></i> 
-                Error rendering HTML: ${e.message}
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="empty-state-text">Error rendering HTML: ${e.message}</div>
                 <p>The HTML content cannot be displayed safely.</p>
             </div>
         `;
@@ -5180,6 +5751,9 @@ function saveEdit() {
     const username = currentEditLetter.username;
     const format = currentEditLetter.format || 'markdown';
     
+    // Show saving notification
+    showNotification('Saving letter...', false);
+    
     fetch(`${API_BASE}/edit_letter`, {
         method: 'POST',
         headers: {
@@ -5270,7 +5844,7 @@ function syncLetters() {
             loadLetters();
             loadCommunityLetters();
             
-            showNotification('Letters synced successfully');
+            showNotification(data.message || 'Letters synced successfully');
         })
         .catch(error => {
             console.error('Error syncing letters:', error);
@@ -5300,6 +5874,7 @@ function showNotification(message, isError = false) {
     </script>
 </body>
 </html>
+
 ```
 
 ## File: web\templates\settings.html
@@ -5970,7 +6545,7 @@ function showNotification(message, isError = false) {
                                 <option value="openai/gpt-4o" {% if config.keypoints_model == 'openai/gpt-4o' %}selected{% endif %}>GPT-4o</option>
                                 <option value="openai/gpt-4o-mini" {% if config.keypoints_model == 'openai/gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
                                 <option value="anthropic/claude-3-7-sonnet" {% if config.keypoints_model == 'anthropic/claude-3-7-sonnet' %}selected{% endif %}>Claude 3.7 Sonnet</option>
-                                <option value="deepseek/deepseek-r1" {% if config.screenshot_model == 'deepseek/deepseek-r1' %}selected{% endif %}>Deepseek R1</option>
+                                <option value="deepseek/deepseek-r1" {% if config.keypoints_model == 'deepseek/deepseek-r1' %}selected{% endif %}>Deepseek R1</option>
                             </select>
                         </div>
                         <span class="help-text">AI model used to extract key points from your screenshots.</span>
@@ -5985,7 +6560,7 @@ function showNotification(message, isError = false) {
                                 <option value="openai/gpt-4o" {% if config.letter_model == 'openai/gpt-4o' %}selected{% endif %}>GPT-4o</option>
                                 <option value="openai/gpt-4o-mini" {% if config.letter_model == 'openai/gpt-4o-mini' %}selected{% endif %}>GPT-4o Mini</option>
                                 <option value="google/gemma-3-27b-it" {% if config.letter_model == 'google/gemma-3-27b-it' %}selected{% endif %}>Gemma 3 (27B)</option>
-                                <option value="deepseek/deepseek-r1" {% if config.screenshot_model == 'deepseek/deepseek-r1' %}selected{% endif %}>Deepseek R1</option>
+                                <option value="deepseek/deepseek-r1" {% if config.letter_model == 'deepseek/deepseek-r1' %}selected{% endif %}>Deepseek R1</option>
                             </select>
                         </div>
                         <span class="help-text">AI model used to generate your learning summary letters.</span>

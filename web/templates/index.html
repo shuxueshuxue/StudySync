@@ -13,52 +13,72 @@
         :root {
             /* Theme variables will be set in CSS */
             /* Light theme (default) */
-            --primary-color: #0078D7;
-            --secondary-color: #2AAA8A;
-            --accent-color: #6A0DAD;
-            --bg-color: #1E1E1E;
-            --card-color: #252526;
-            --text-color: #E1E1E1;
-            --border-color: #444444;
-            --hover-color: #2A2A2D;
-            --success-color: #73C991;
-            --warning-color: #DDB100;
-            --danger-color: #F14C4C;
+            --primary-color: #4361ee;
+            --primary-color-rgb: 67, 97, 238;
+            --secondary-color: #3ECF8E;
+            --accent-color: #7B2CBF;
+            --bg-color: #F8F9FA;
+            --card-color: #FFFFFF;
+            --text-color: #333333;
+            --border-color: #E0E0E0;
+            --hover-color: #F1F3F9;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+            --muted-color: #6c757d;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.1);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.1);
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 16px;
+            --font-sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            --font-mono: 'Consolas', 'Monaco', 'Andale Mono', 'Ubuntu Mono', monospace;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.25s ease;
         }
         
         /* Dark theme */
         html[data-theme='dark'] {
-            --primary-color: #4361ee;
-            --secondary-color: #3ECF8E;
-            --accent-color: #8A2BE2;
-            --bg-color: #121212;
-            --card-color: #1E1E1E;
-            --text-color: #F5F5F5;
-            --border-color: #333333;
-            --hover-color: #252525;
-            --success-color: #4CAF50;
-            --warning-color: #FFC107;
-            --danger-color: #F44336;
+            --primary-color: #6366F1;
+            --primary-color-rgb: 99, 102, 241;
+            --secondary-color: #10B981;
+            --accent-color: #8B5CF6;
+            --bg-color: #111827;
+            --card-color: #1F2937;
+            --text-color: #F9FAFB;
+            --border-color: #374151;
+            --hover-color: #2D3748;
+            --success-color: #059669;
+            --warning-color: #D97706;
+            --danger-color: #DC2626;
+            --muted-color: #9CA3AF;
+            --shadow-sm: 0 2px 4px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 8px rgba(0,0,0,0.4);
+            --shadow-lg: 0 8px 16px rgba(0,0,0,0.5);
         }
         
         /* Light theme */
         html[data-theme='light'] {
-            --primary-color: #1976D2;
-            --secondary-color: #009688;
-            --accent-color: #673AB7;
-            --bg-color: #F5F5F5;
+            --primary-color: #4361ee;
+            --primary-color-rgb: 67, 97, 238;
+            --secondary-color: #3ECF8E;
+            --accent-color: #7B2CBF;
+            --bg-color: #F8F9FA;
             --card-color: #FFFFFF;
             --text-color: #333333;
             --border-color: #E0E0E0;
-            --hover-color: #EEEEEE;
+            --hover-color: #F1F3F9;
             --success-color: #4CAF50;
-            --warning-color: #FFC107;
+            --warning-color: #FF9800;
             --danger-color: #F44336;
+            --muted-color: #6c757d;
         }
         
         /* Custom theme */
         html[data-theme='custom'] {
             --primary-color: #FF5722;
+            --primary-color-rgb: 255, 87, 34;
             --secondary-color: #03A9F4;
             --accent-color: #9C27B0;
             --bg-color: #FFF8E1;
@@ -69,29 +89,52 @@
             --success-color: #8BC34A;
             --warning-color: #FFEB3B;
             --danger-color: #FF5252;
+            --muted-color: #9E9E9E;
         }
         
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
+        * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
         }
         
+        body {
+            font-family: var(--font-sans);
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            font-size: 16px;
+            transition: background-color var(--transition-normal), color var(--transition-normal);
+        }
+        
         .container {
-            max-width: 1200px;
+            max-width: 1280px;
             margin: 0 auto;
             padding: 20px;
         }
         
         header {
+            background-color: var(--card-color);
+            padding: 1rem;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-color);
+            transition: background-color var(--transition-normal);
+            width: 100%;
+        }
+        
+        .header-content {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 30px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 15px;
+            max-width: 1280px;
+            margin: 0 auto;
+            width: 100%;
         }
         
         .brand {
@@ -101,22 +144,31 @@
         
         .brand h1 {
             margin: 0;
+            font-size: 1.5rem;
+            font-weight: 700;
             color: var(--primary-color);
+            transition: color var(--transition-normal);
         }
         
         .brand-icon {
             margin-right: 15px;
             color: var(--primary-color);
-            font-size: 2rem;
+            font-size: 1.8rem;
+            transition: color var(--transition-normal);
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 0.75rem;
         }
         
         .nav-links a {
             color: var(--text-color);
             text-decoration: none;
-            margin-left: 20px;
-            padding: 8px 15px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            transition: all var(--transition-fast);
+            font-weight: 500;
         }
         
         .nav-links a:hover {
@@ -128,82 +180,148 @@
             color: white;
         }
         
-
-/* Copy button styling */
-.copy-button {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    background-color: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 4px 8px;
-    font-size: 12px;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.markdown-body pre {
-    position: relative;
-}
-
-.markdown-body pre:hover .copy-button {
-    opacity: 1;
-}
-
-.copy-button:hover {
-    background-color: var(--accent-color);
-}
-
-.copy-button.copied {
-    background-color: var(--success-color);
-}
-
-        .main-content {
-            display: grid;
-            grid-template-columns: 1fr 3fr;
-            gap: 20px;
+        /* Copy button styling */
+        .copy-button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: var(--radius-sm);
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            opacity: 0;
+            transition: opacity var(--transition-fast), background-color var(--transition-fast);
         }
         
+        .markdown-body pre {
+            position: relative;
+            border-radius: var(--radius-sm);
+            overflow: hidden;
+        }
+        
+        .markdown-body pre:hover .copy-button {
+            opacity: 1;
+        }
+        
+        .copy-button:hover {
+            background-color: var(--accent-color);
+        }
+        
+        .copy-button.copied {
+            background-color: var(--success-color);
+        }
+        
+        /* Main content layout with fixed dimensions */
+        .main-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 24px;
+            max-width: 1280px;
+            margin: 0 auto;
+        }
+        
+        /* Auto-expand sidebar */
+        .sidebar-trigger {
+            position: fixed;
+            left: 0;
+            top: 80px;
+            bottom: 20px;
+            width: 12px;
+            background-color: var(--primary-color);
+            opacity: 0.2;
+            z-index: 90;
+            border-top-right-radius: var(--radius-sm);
+            border-bottom-right-radius: var(--radius-sm);
+            transition: opacity var(--transition-fast);
+            cursor: pointer;
+        }
+        
+        .sidebar-trigger:hover {
+            opacity: 0.5;
+        }
+        
+        .sidebar-trigger:after {
+            content: "≡";
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        /* Fixed-width sidebar */
         .sidebar {
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
             height: fit-content;
+            box-shadow: var(--shadow-sm);
+            transition: all var(--transition-normal);
+            width: 100%;
+            max-width: 300px;
+            position: fixed;
+            left: -320px;
+            top: 80px;
+            bottom: 20px;
+            z-index: 90;
+            overflow-y: auto;
+        }
+        
+        .sidebar.expanded {
+            left: 20px;
+            transform: translateX(0);
         }
         
         .sidebar h2 {
             margin-top: 0;
             color: var(--primary-color);
             font-size: 1.2rem;
-            margin-bottom: 15px;
+            margin-bottom: 1.25rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .sidebar-actions {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
+            margin-bottom: 1.5rem;
         }
         
         .btn {
             background-color: var(--primary-color);
             color: white;
             border: none;
-            padding: 10px 15px;
-            border-radius: 4px;
+            padding: 10px 16px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s ease;
+            font-weight: 600;
+            transition: background-color var(--transition-fast), transform var(--transition-fast);
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
+            box-shadow: var(--shadow-sm);
+            font-size: 0.9rem;
         }
         
         .btn:hover {
-            opacity: 0.9;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
         }
         
         .btn-success {
@@ -222,104 +340,153 @@
             background-color: var(--danger-color);
         }
         
+        /* Fixed-width calendar view */
         .calendar-view {
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal), box-shadow var(--transition-normal);
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
         }
         
         .calendar-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
         }
         
         .calendar-header h2 {
             margin: 0;
             color: var(--primary-color);
+            font-size: 1.4rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .calendar-controls {
             display: flex;
-            gap: 10px;
+            gap: 8px;
         }
         
         .calendar-grid {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
-            margin-bottom: 10px;
+            gap: 8px;
+            margin-bottom: 12px;
         }
         
+        /* Improved calendar days container */
         .calendar-days-container {
             display: grid;
             grid-template-columns: repeat(7, 1fr);
-            gap: 10px;
+            gap: 8px;
         }
         
         .calendar-day-header {
             text-align: center;
-            font-weight: bold;
-            padding: 10px;
+            font-weight: 600;
+            padding: 8px;
             color: var(--text-color);
+            font-size: 0.85rem;
         }
         
+        /* Make calendar days fixed height for consistency */
         .calendar-day {
-            background-color: var(--bg-color);
-            border-radius: 4px;
-            min-height: 80px;
-            padding: 10px;
+            background-color: var(--card-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            height: 100px; /* Fixed height */
+            min-height: unset; /* Remove min-height */
+            max-height: 100px; /* Fixed max height */
+            padding: 8px;
             position: relative;
-            transition: background-color 0.2s ease;
+            transition: all var(--transition-fast);
+            box-shadow: var(--shadow-sm);
+            overflow: hidden; /* Hide overflow content */
         }
         
         .calendar-day:hover {
-            background-color: var(--hover-color);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
         }
         
         .calendar-day-number {
-            position: absolute;
-            top: 5px;
-            right: 8px;
             font-size: 0.85rem;
-            opacity: 0.7;
+            font-weight: 500;
+            color: var(--muted-color);
+            margin-bottom: 6px;
         }
         
         .day-content {
-            margin-top: 20px;
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 6px;
+            margin-top: 10px;
+            overflow: hidden;
         }
         
-        .letter-badge {
-            display: inline-block;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-size: 0.8rem;
+        /* Letter card improvements */
+        .letter-card {
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
             cursor: pointer;
-            text-align: center;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            transition: all var(--transition-fast);
+            margin-bottom: 3px;
+            font-size: 0.85rem;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
         
-        .letter-badge.mine {
-            background-color: var(--primary-color);
+        .letter-card:hover {
+            transform: translateY(-2px);
         }
         
-        .letter-badge.shared {
-            background-color: var(--secondary-color);
+        .letter-card.mine {
+            background-color: rgba(67, 97, 238, 0.1);
+            border-color: rgba(67, 97, 238, 0.3);
         }
         
-        .letter-badge.not-shared {
-            background-color: var(--bg-color);
-            border: 1px solid var(--primary-color);
-            opacity: 0.7;
+        .letter-card.mine:hover {
+            background-color: rgba(67, 97, 238, 0.15);
         }
         
-        .letter-badge .user-initials {
-            opacity: 0.8;
-            margin-right: 3px;
+        .letter-card.shared {
+            background-color: rgba(62, 207, 142, 0.1);
+            border-color: rgba(62, 207, 142, 0.3);
+        }
+        
+        .letter-card.shared:hover {
+            background-color: rgba(62, 207, 142, 0.15);
+        }
+        
+        .letter-card.not-shared {
+            background-color: rgba(200, 200, 200, 0.1);
+            border-color: rgba(200, 200, 200, 0.3);
+        }
+        
+        .letter-card.not-shared:hover {
+            background-color: rgba(200, 200, 200, 0.15);
+        }
+        
+        .letter-card-title {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .letter-card-author {
+            font-size: 0.75rem;
+            color: var(--muted-color);
         }
         
         .letter-preview {
@@ -329,10 +496,11 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background-color: rgba(0, 0, 0, 0.8);
+            background-color: rgba(0, 0, 0, 0.7);
             z-index: 1000;
             padding: 20px;
             overflow-y: auto;
+            backdrop-filter: blur(5px);
         }
         
         .letter-preview-content {
@@ -340,9 +508,11 @@
             max-width: 900px;
             margin: 40px auto;
             padding: 30px;
-            border-radius: 8px;
+            border-radius: var(--radius-lg);
             position: relative;
             color: var(--text-color);
+            box-shadow: var(--shadow-lg);
+            transition: background-color var(--transition-normal);
         }
         
         .letter-preview-content h1,
@@ -359,6 +529,11 @@
             color: white;
             cursor: pointer;
             z-index: 1001;
+            transition: transform var(--transition-fast);
+        }
+        
+        .close-preview:hover {
+            transform: rotate(90deg);
         }
         
         .letter-actions {
@@ -371,44 +546,65 @@
         
         .badge {
             display: inline-block;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
             background-color: var(--primary-color);
             color: white;
+            font-weight: 500;
+        }
+        
+        .badge-success {
+            background-color: var(--success-color);
+        }
+        
+        .badge-accent {
+            background-color: var(--accent-color);
+        }
+        
+        .badge-warning {
+            background-color: var(--warning-color);
         }
         
         .user-list {
-            margin-top: 20px;
+            margin-top: 1.5rem;
         }
         
         .user-list h3 {
             margin-top: 0;
             font-size: 1rem;
             color: var(--primary-color);
+            margin-bottom: 1rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .user-item {
             display: flex;
             align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid var(--border-color);
+            padding: 8px 10px;
+            border-radius: var(--radius-sm);
+            margin-bottom: 6px;
+            transition: background-color var(--transition-fast);
         }
         
-        .user-item:last-child {
-            border-bottom: none;
+        .user-item:hover {
+            background-color: var(--hover-color);
         }
         
         .user-avatar {
-            width: 30px;
-            height: 30px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             background-color: var(--primary-color);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-right: 10px;
-            font-weight: bold;
+            margin-right: 12px;
+            font-weight: 600;
+            color: white;
+            font-size: 0.85rem;
+            transition: background-color var(--transition-normal);
         }
         
         .user-name {
@@ -424,30 +620,32 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            transition: background-color var(--transition-normal);
         }
 
         .tooltip {
             position: relative;
-            display: inline-block;
         }
 
         .tooltip .tooltiptext {
             visibility: hidden;
-            width: 120px;
-            background-color: #333;
+            width: 150px;
+            background-color: rgba(0, 0, 0, 0.8);
             color: #fff;
             text-align: center;
-            border-radius: 6px;
-            padding: 5px;
+            border-radius: var(--radius-sm);
+            padding: 6px 8px;
             position: absolute;
             z-index: 1;
             bottom: 125%;
             left: 50%;
-            margin-left: -60px;
+            margin-left: -75px;
             opacity: 0;
             transition: opacity 0.3s;
             font-size: 0.8rem;
+            pointer-events: none;
         }
 
         .tooltip:hover .tooltiptext {
@@ -462,7 +660,7 @@
         }
 
         .spinner {
-            border: 4px solid rgba(255, 255, 255, 0.3);
+            border: 4px solid rgba(255, 255, 255, 0.1);
             border-radius: 50%;
             border-top: 4px solid var(--primary-color);
             width: 40px;
@@ -478,10 +676,20 @@
 
         .today {
             border: 2px solid var(--primary-color);
+            background-color: var(--card-color);
+            box-shadow: var(--shadow-md);
         }
 
         .empty-day {
-            opacity: 0.3;
+            opacity: 0.4;
+            background-color: transparent;
+            border: 1px dashed var(--border-color);
+            box-shadow: none;
+        }
+        
+        .empty-day:hover {
+            transform: none;
+            box-shadow: none;
         }
 
         .notification {
@@ -489,14 +697,15 @@
             bottom: 20px;
             right: 20px;
             padding: 15px 20px;
-            border-radius: 4px;
+            border-radius: var(--radius-md);
             background-color: var(--success-color);
             color: white;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            box-shadow: var(--shadow-md);
             z-index: 1000;
             transform: translateY(100px);
             opacity: 0;
             transition: all 0.3s ease;
+            max-width: 350px;
         }
 
         .notification.show {
@@ -514,6 +723,7 @@
             height: calc(100vh - 150px);
             border: none;
             background-color: var(--card-color);
+            border-radius: var(--radius-md);
         }
 
         /* Theme switcher */
@@ -521,20 +731,21 @@
             display: flex;
             align-items: center;
             gap: 15px;
-            padding: 10px;
-            margin-top: 15px;
+            padding: 12px;
+            margin-top: 20px;
             background-color: var(--bg-color);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
         }
         
         .theme-option {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             border-radius: 50%;
             cursor: pointer;
             border: 2px solid transparent;
             position: relative;
+            transition: all var(--transition-fast);
         }
         
         .theme-option.active {
@@ -555,12 +766,12 @@
         }
         
         .edit-mode-toggle {
-            margin-top: 10px;
-            padding: 10px;
+            margin-top: 12px;
+            padding: 12px;
             display: flex;
             align-items: center;
             background-color: var(--bg-color);
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
         }
         
@@ -572,7 +783,7 @@
         .switch {
             position: relative;
             display: inline-block;
-            width: 48px;
+            width: 50px;
             height: 24px;
         }
         
@@ -597,10 +808,10 @@
         .slider:before {
             position: absolute;
             content: "";
-            height: 16px;
-            width: 16px;
-            left: 4px;
-            bottom: 4px;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
             background-color: white;
             transition: .4s;
             border-radius: 50%;
@@ -611,37 +822,46 @@
         }
         
         input:checked + .slider:before {
-            transform: translateX(24px);
+            transform: translateX(26px);
         }
 
         /* Editor styles */
         .letter-editor {
             display: none;
             background-color: var(--card-color);
-            border-radius: 8px;
-            padding: 20px;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
             position: relative;
+            box-shadow: var(--shadow-md);
+            margin-top: 20px;
+            transition: background-color var(--transition-normal);
         }
         
         .editor-actions {
             display: flex;
             justify-content: flex-end;
             gap: 10px;
-            margin-top: 15px;
+            margin-top: 1rem;
         }
         
         .editor-textarea {
             width: 100%;
             min-height: 500px;
             padding: 15px;
-            border-radius: 8px;
+            border-radius: var(--radius-sm);
             border: 1px solid var(--border-color);
             background-color: var(--bg-color);
             color: var(--text-color);
-            font-family: 'Consolas', monospace;
+            font-family: var(--font-mono);
             font-size: 14px;
             line-height: 1.6;
             resize: vertical;
+            transition: border-color var(--transition-fast);
+        }
+        
+        .editor-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
         }
         
         /* Full page letter view */
@@ -667,17 +887,21 @@
             position: sticky;
             top: 0;
             z-index: 10;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal);
         }
         
         .letter-page-title {
             color: var(--primary-color);
             margin: 0;
             font-size: 1.2rem;
+            font-weight: 600;
+            transition: color var(--transition-normal);
         }
         
         .letter-page-actions {
             display: flex;
-            gap: 15px;
+            gap: 12px;
         }
         
         .letter-page-content {
@@ -690,25 +914,27 @@
             position: fixed;
             top: 70px;
             right: 20px;
-            width: 250px;
+            width: 260px;
             max-height: calc(100vh - 100px);
             background-color: var(--card-color);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-md);
             padding: 15px;
             overflow-y: auto;
             z-index: 1005;
             border: 1px solid var(--border-color);
             display: none;
+            transition: background-color var(--transition-normal);
         }
         
         .toc-title {
             font-size: 1rem;
             font-weight: 600;
             color: var(--primary-color);
-            margin-bottom: 10px;
-            padding-bottom: 8px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
             border-bottom: 1px solid var(--border-color);
+            transition: color var(--transition-normal);
         }
         
         .toc-list {
@@ -718,16 +944,16 @@
         }
         
         .toc-item {
-            margin: 8px 0;
+            margin: 6px 0;
         }
         
         .toc-link {
             color: var(--text-color);
             text-decoration: none;
             display: block;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s ease;
+            padding: 6px 10px;
+            border-radius: var(--radius-sm);
+            transition: background-color var(--transition-fast);
             font-size: 0.9rem;
         }
         
@@ -761,14 +987,16 @@
         /* Code block styling enhancements */
         .markdown-body pre {
             background-color: var(--bg-color);
-            border-radius: 6px;
+            border-radius: var(--radius-sm);
             padding: 1em;
             overflow: auto;
             margin: 1em 0;
+            box-shadow: var(--shadow-sm);
+            transition: background-color var(--transition-normal);
         }
         
         .markdown-body code {
-            font-family: Consolas, Monaco, 'Andale Mono', 'Ubuntu Mono', monospace;
+            font-family: var(--font-mono);
             font-size: 0.9em;
             padding: 0.2em 0.4em;
             border-radius: 3px;
@@ -780,30 +1008,260 @@
             padding: 0;
             border-radius: 0;
         }
+        
+        /* Remove quick action button */
+        .quick-action-btn, .quick-action-menu {
+            display: none !important;
+        }
+        
+        /* Empty state */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 3rem;
+            text-align: center;
+            color: var(--muted-color);
+        }
+        
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--border-color);
+        }
+        
+        .empty-state-text {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Letter Count Badge */
+        .letter-count-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            min-width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 0 5px;
+            box-shadow: var(--shadow-sm);
+            transition: transform 0.2s;
+        }
 
+        /* Make calendar days with letters more interactive */
+        .calendar-day {
+            position: relative;
+            transition: all var(--transition-fast);
+        }
+
+        .calendar-day[style*="cursor: pointer"]:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            border-color: var(--primary-color);
+        }
+
+        .calendar-day[style*="cursor: pointer"]:hover .letter-count-badge {
+            transform: scale(1.1);
+        }
+
+        /* Remove the old day detail indicator since we don't need it anymore */
+        .day-detail-indicator {
+            display: none;
+        }
+
+        /* Day detail modal */
+        .day-detail-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(3px);
+        }
+
+        .day-detail-content {
+            background-color: var(--card-color);
+            border-radius: var(--radius-md);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .day-detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .day-detail-header h3 {
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .close-day-detail {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+
+        .day-detail-body {
+            padding: 20px;
+        }
+
+        .day-detail-letter {
+            padding: 15px;
+            border-radius: var(--radius-sm);
+            background-color: var(--bg-color);
+            margin-bottom: 15px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .day-detail-letter:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .day-detail-letter.mine {
+            background-color: rgba(var(--primary-color-rgb), 0.1);
+        }
+
+        .letter-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .letter-author {
+            font-weight: bold;
+        }
+
+        .letter-status {
+            font-size: 0.85rem;
+            color: var(--muted-color);
+        }
+
+        .no-letters {
+            text-align: center;
+            padding: 20px;
+            color: var(--muted-color);
+        }
+        
+        /* Media queries for responsiveness */
+        @media (max-width: 1024px) {
+            .sidebar.expanded {
+                width: 250px;
+            }
+        }
+        
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
+            .sidebar.expanded {
+                left: 0;
+                width: 100%;
+                max-width: 100%;
+                border-radius: 0;
             }
             
-            .calendar-grid,
-            .calendar-days-container {
-                grid-template-columns: repeat(7, 1fr);
+            .sidebar-trigger {
+                width: 8px;
+            }
+            
+            .calendar-view {
+                max-width: 100%;
             }
             
             .calendar-day {
-                min-height: 60px;
+                height: 80px;
+                max-height: 80px;
             }
             
             .toc-container {
-                display: none;
+                display: none !important;
+                width: 100%;
+                left: 0;
+                right: 0;
+                top: 0;
+                border-radius: 0;
+            }
+            
+            .letter-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+            
+            .letter-page-actions {
+                width: 100%;
+                justify-content: space-between;
+            }
+            
+            .letter-page-content {
+                padding: 20px 15px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .calendar-grid,
+            .calendar-days-container {
+                grid-template-columns: repeat(7, 1fr);
+                gap: 4px;
+            }
+            
+            .calendar-day {
+                height: 60px;
+                max-height: 60px;
+                padding: 5px;
+            }
+            
+            .calendar-day-header {
+                font-size: 0.7rem;
+                padding: 4px;
+            }
+            
+            .letter-card {
+                padding: 4px;
+            }
+            
+            .letter-card-title {
+                font-size: 0.8rem;
+            }
+            
+            .letter-card-author {
+                font-size: 0.7rem;
+            }
+            
+            .brand h1 {
+                font-size: 1.2rem;
+            }
+            
+            .nav-links a {
+                padding: 0.4rem 0.6rem;
+                font-size: 0.9rem;
             }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
+    <header>
+        <div class="header-content">
             <div class="brand">
                 <div class="brand-icon">
                     {% if app_icon == "lightbulb" %}
@@ -826,10 +1284,16 @@
                 <a href="/" class="active"><i class="fas fa-calendar-alt"></i> Calendar</a>
                 <a href="/settings"><i class="fas fa-cog"></i> Settings</a>
             </div>
-        </header>
+        </div>
+    </header>
+    
+    <div class="container">
+        <!-- Sidebar trigger for auto-expand on hover -->
+        <div id="sidebar-trigger" class="sidebar-trigger"></div>
         
         <div class="main-content">
-            <div class="sidebar">
+            <!-- Sidebar is now outside of the grid layout and positioned fixed -->
+            <div id="sidebar" class="sidebar">
                 <h2><i class="fas fa-tachometer-alt"></i> Dashboard</h2>
                 <div class="sidebar-actions">
                     <button id="generate-letter" class="btn btn-success">
@@ -928,7 +1392,7 @@
                     <i class="fas fa-edit"></i> Edit
                 </button>
                 <button id="toggle-toc" class="btn">
-                    <i class="fas fa-list"></i> Toggle TOC
+                    <i class="fas fa-list"></i> Table of Contents
                 </button>
                 <button id="close-letter-page" class="btn btn-warning">
                     <i class="fas fa-times"></i> Close
@@ -962,6 +1426,7 @@
     
     <script>
 // Global variables and DOM element references
+// Global variables and DOM element references
 const PORT = "{{ port }}";
 const API_BASE = `http://localhost:${PORT}/api`;
 const USERNAME = "{{ username }}";
@@ -991,6 +1456,8 @@ const closeLettterPageBtn = document.getElementById('close-letter-page');
 const editLetterBtn = document.getElementById('edit-letter');
 const toggleTocBtn = document.getElementById('toggle-toc');
 const notificationEl = document.getElementById('notification');
+const sidebarEl = document.getElementById('sidebar');
+const sidebarTriggerEl = document.getElementById('sidebar-trigger');
 
 // State variables
 let myLetters = [];
@@ -998,6 +1465,9 @@ let communityLetters = {};
 let currentEditLetter = null;
 let editMode = true;
 let currentDate = new Date();
+let sidebarExpanded = false;
+let sidebarHoverTimeout = null;
+let currentDayDetailModal = null; // Added to track open day detail modals
 
 document.addEventListener('DOMContentLoaded', () => {
     // Configure marked.js with syntax highlighting
@@ -1064,6 +1534,8 @@ document.addEventListener('DOMContentLoaded', () => {
         letterPageEl.style.display = 'none';
         // Hide the TOC when closing the letter page
         hideTOC();
+        // Close any open day detail modal
+        closeDayDetailModal();
     });
     
     editLetterBtn.addEventListener('click', () => {
@@ -1071,14 +1543,88 @@ document.addEventListener('DOMContentLoaded', () => {
             startEdit(currentEditLetter.content, currentEditLetter.username, currentEditLetter.dateStr);
             letterPageEl.style.display = 'none';
             hideTOC();
+            // Close any open day detail modal
+            closeDayDetailModal();
         }
     });
     
     toggleTocBtn.addEventListener('click', toggleTableOfContents);
     
+    // Setup sidebar auto-expand on hover
+    setupSidebarHover();
+    
     // Check for letter hash in URL
     checkForLetterInUrl();
 });
+
+// Function to close day detail modal
+function closeDayDetailModal() {
+    if (currentDayDetailModal) {
+        currentDayDetailModal.remove();
+        currentDayDetailModal = null;
+    }
+}
+
+// Auto-expand sidebar on hover
+function setupSidebarHover() {
+    // Expand sidebar when hovering over the trigger
+    sidebarTriggerEl.addEventListener('mouseenter', () => {
+        clearTimeout(sidebarHoverTimeout);
+        expandSidebar();
+    });
+    
+    // Contract sidebar when leaving both the sidebar and trigger
+    sidebarTriggerEl.addEventListener('mouseleave', () => {
+        if (!sidebarEl.matches(':hover')) {
+            sidebarHoverTimeout = setTimeout(() => {
+                contractSidebar();
+            }, 300);
+        }
+    });
+    
+    sidebarEl.addEventListener('mouseenter', () => {
+        clearTimeout(sidebarHoverTimeout);
+    });
+    
+    sidebarEl.addEventListener('mouseleave', () => {
+        sidebarHoverTimeout = setTimeout(() => {
+            contractSidebar();
+        }, 300);
+    });
+    
+    // Close sidebar when clicking anywhere else
+    document.addEventListener('click', (e) => {
+        if (sidebarExpanded && 
+            !sidebarEl.contains(e.target) && 
+            !sidebarTriggerEl.contains(e.target)) {
+            contractSidebar();
+        }
+    });
+}
+
+// Expand the sidebar
+function expandSidebar() {
+    sidebarExpanded = true;
+    sidebarEl.classList.add('expanded');
+}
+
+// Contract the sidebar
+function contractSidebar() {
+    sidebarExpanded = false;
+    sidebarEl.classList.remove('expanded');
+}
+
+// Toggle table of contents
+function toggleTableOfContents() {
+    const tocContainer = document.querySelector('.toc-container');
+    if (tocContainer) {
+        if (tocContainer.style.display === 'none' || !tocContainer.style.display) {
+            tocContainer.style.display = 'block';
+        } else {
+            tocContainer.style.display = 'none';
+        }
+    }
+}
 
 // Hide the table of contents
 function hideTOC() {
@@ -1149,18 +1695,6 @@ function setTheme(theme) {
     } else {
         document.getElementById('light-theme-code').disabled = false;
         document.getElementById('dark-theme-code').disabled = true;
-    }
-}
-
-// Toggle table of contents
-function toggleTableOfContents() {
-    const tocContainer = document.querySelector('.toc-container');
-    if (tocContainer) {
-        if (tocContainer.style.display === 'none' || !tocContainer.style.display) {
-            tocContainer.style.display = 'block';
-        } else {
-            tocContainer.style.display = 'none';
-        }
     }
 }
 
@@ -1274,10 +1808,37 @@ function loadCommunityLetters() {
         });
 }
 
-// Populate calendar with letter data
+// Populate calendar with letter data - improved version with letter count badges
 function populateCalendarWithLetters() {
     // Clear existing letter badges
-    document.querySelectorAll('.letter-badge').forEach(badge => badge.remove());
+    document.querySelectorAll('.letter-card').forEach(card => card.remove());
+    document.querySelectorAll('.day-detail-indicator').forEach(indicator => indicator.remove());
+    document.querySelectorAll('.letter-count-badge').forEach(badge => badge.remove());
+    
+    // Set up a counter for each date to keep track of how many letters exist for that day
+    const letterCounts = {};
+    
+    // Count my letters
+    myLetters.forEach(letter => {
+        const dateStr = letter.date_str;
+        if (!letterCounts[dateStr]) {
+            letterCounts[dateStr] = 0;
+        }
+        letterCounts[dateStr]++;
+    });
+    
+    // Count community letters
+    Object.keys(communityLetters).forEach(username => {
+        if (username !== USERNAME) {
+            communityLetters[username].forEach(letter => {
+                const dateStr = letter.date_str;
+                if (!letterCounts[dateStr]) {
+                    letterCounts[dateStr] = 0;
+                }
+                letterCounts[dateStr]++;
+            });
+        }
+    });
     
     // Add my letters
     myLetters.forEach(letter => {
@@ -1287,27 +1848,35 @@ function populateCalendarWithLetters() {
         if (dayEl) {
             const dayContent = dayEl.querySelector('.day-content');
             
-            const letterBadge = document.createElement('div');
-            letterBadge.className = `letter-badge ${letter.synced ? 'shared' : 'not-shared'}`;
-            letterBadge.innerHTML = `<span class="user-initials">Me</span>`;
-            letterBadge.setAttribute('data-date', dateStr);
-            letterBadge.setAttribute('data-user', USERNAME);
-            letterBadge.setAttribute('data-synced', letter.synced);
-            letterBadge.setAttribute('data-format', letter.format || 'unknown');
+            const letterCard = document.createElement('div');
+            letterCard.className = `letter-card ${letter.synced ? 'shared' : 'not-shared'} mine`;
             
-            // Add tooltip
-            const tooltip = document.createElement('span');
-            tooltip.className = 'tooltiptext';
-            tooltip.textContent = letter.synced ? 'Your shared letter' : 'Your private letter';
-            letterBadge.classList.add('tooltip');
-            letterBadge.appendChild(tooltip);
+            // Simplified card with no format badge
+            const cardTitle = document.createElement('div');
+            cardTitle.className = 'letter-card-title';
+            cardTitle.textContent = 'Your Letter';
             
-            letterBadge.addEventListener('click', () => openLetter(dateStr, USERNAME, true));
-            dayContent.appendChild(letterBadge);
+            const cardAuthor = document.createElement('div');
+            cardAuthor.className = 'letter-card-author';
+            cardAuthor.textContent = letter.synced ? 'Shared' : 'Private';
+            
+            letterCard.appendChild(cardTitle);
+            letterCard.appendChild(cardAuthor);
+            
+            letterCard.setAttribute('data-date', dateStr);
+            letterCard.setAttribute('data-user', USERNAME);
+            letterCard.setAttribute('data-synced', letter.synced);
+            
+            letterCard.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent triggering the day click event
+                closeDayDetailModal(); // Close modal before opening letter
+                openLetter(dateStr, USERNAME, true);
+            });
+            dayContent.appendChild(letterCard);
         }
     });
     
-    // Add community letters
+    // Add community letters with similar simplified approach
     Object.keys(communityLetters).forEach(username => {
         if (username !== USERNAME) {
             communityLetters[username].forEach(letter => {
@@ -1317,24 +1886,163 @@ function populateCalendarWithLetters() {
                 if (dayEl) {
                     const dayContent = dayEl.querySelector('.day-content');
                     
-                    const letterBadge = document.createElement('div');
-                    letterBadge.className = 'letter-badge shared';
-                    letterBadge.innerHTML = `<span class="user-initials">${getInitials(username)}</span>`;
-                    letterBadge.setAttribute('data-date', dateStr);
-                    letterBadge.setAttribute('data-user', username);
-                    letterBadge.setAttribute('data-format', letter.format || 'unknown');
+                    const letterCard = document.createElement('div');
+                    letterCard.className = 'letter-card shared';
                     
-                    // Add tooltip
-                    const tooltip = document.createElement('span');
-                    tooltip.className = 'tooltiptext';
-                    tooltip.textContent = `${username}'s letter`;
-                    letterBadge.classList.add('tooltip');
-                    letterBadge.appendChild(tooltip);
+                    // Simplified card with no format badge
+                    const cardTitle = document.createElement('div');
+                    cardTitle.className = 'letter-card-title';
+                    cardTitle.textContent = username;
                     
-                    letterBadge.addEventListener('click', () => openLetter(dateStr, username, false));
-                    dayContent.appendChild(letterBadge);
+                    letterCard.appendChild(cardTitle);
+                    
+                    letterCard.setAttribute('data-date', dateStr);
+                    letterCard.setAttribute('data-user', username);
+                    
+                    letterCard.addEventListener('click', (e) => {
+                        e.stopPropagation(); // Prevent triggering the day click event
+                        closeDayDetailModal(); // Close modal before opening letter
+                        openLetter(dateStr, username, false);
+                    });
+                    dayContent.appendChild(letterCard);
                 }
             });
+        }
+    });
+    
+    // Add letter count badges and make entire day cells clickable
+    Object.keys(letterCounts).forEach(dateStr => {
+        const dayEl = document.querySelector(`.calendar-day[data-date="${dateStr}"]`);
+        if (dayEl) {
+            // Add letter count badge
+            const countBadge = document.createElement('div');
+            countBadge.className = 'letter-count-badge';
+            countBadge.textContent = letterCounts[dateStr];
+            dayEl.appendChild(countBadge);
+            
+            // Make the entire day cell clickable
+            dayEl.style.cursor = 'pointer';
+            dayEl.addEventListener('click', () => {
+                showDayDetail(dateStr);
+            });
+        }
+    });
+    
+    // Add empty state for days with no content
+    document.querySelectorAll('.calendar-day:not(.empty-day)').forEach(dayEl => {
+        const dayContent = dayEl.querySelector('.day-content');
+        if (!dayContent.children.length && !dayEl.classList.contains('empty-day')) {
+            dayContent.innerHTML = ''; // Clear existing content
+        }
+    });
+}
+
+// Show detailed day view
+function showDayDetail(dateStr) {
+    // Close any existing day detail modal first
+    closeDayDetailModal();
+    
+    // Format the date
+    const year = dateStr.substring(0, 4);
+    const month = dateStr.substring(4, 6);
+    const day = dateStr.substring(6, 8);
+    const formattedDate = `${year}-${month}-${day}`;
+    
+    // Create modal for day details
+    const modal = document.createElement('div');
+    modal.className = 'day-detail-modal';
+    
+    // Store the modal in our global variable for tracking
+    currentDayDetailModal = modal;
+    
+    // Find all letters for this day
+    const dayLetters = [];
+    
+    // Add my letters
+    myLetters.forEach(letter => {
+        if (letter.date_str === dateStr) {
+            dayLetters.push({
+                username: USERNAME,
+                isMine: true,
+                synced: letter.synced,
+                dateStr: dateStr
+            });
+        }
+    });
+    
+    // Add community letters
+    Object.keys(communityLetters).forEach(username => {
+        if (username !== USERNAME) {
+            communityLetters[username].forEach(letter => {
+                if (letter.date_str === dateStr) {
+                    dayLetters.push({
+                        username: username,
+                        isMine: false,
+                        synced: true,
+                        dateStr: dateStr
+                    });
+                }
+            });
+        }
+    });
+    
+    // Create modal content
+    const modalContent = document.createElement('div');
+    modalContent.className = 'day-detail-content';
+    
+    const headerDiv = document.createElement('div');
+    headerDiv.className = 'day-detail-header';
+    headerDiv.innerHTML = `
+        <h3>Letters for ${formattedDate}</h3>
+        <button class="close-day-detail"><i class="fas fa-times"></i></button>
+    `;
+    
+    const bodyDiv = document.createElement('div');
+    bodyDiv.className = 'day-detail-body';
+    
+    if (dayLetters.length > 0) {
+        dayLetters.forEach(letter => {
+            const letterDiv = document.createElement('div');
+            letterDiv.className = `day-detail-letter ${letter.isMine ? 'mine' : ''}`;
+            letterDiv.innerHTML = `
+                <div class="letter-info">
+                    <div class="letter-author">${letter.username} ${letter.isMine ? '(You)' : ''}</div>
+                    <div class="letter-status">${letter.isMine ? (letter.synced ? 'Shared' : 'Private') : 'Shared'}</div>
+                </div>
+            `;
+            
+            // Make entire letter div clickable
+            letterDiv.setAttribute('data-date', letter.dateStr);
+            letterDiv.setAttribute('data-user', letter.username);
+            letterDiv.style.cursor = 'pointer';
+            
+            letterDiv.addEventListener('click', () => {
+                closeDayDetailModal(); // Close modal before opening letter
+                openLetter(letter.dateStr, letter.username, letter.isMine);
+            });
+            
+            bodyDiv.appendChild(letterDiv);
+        });
+    } else {
+        bodyDiv.innerHTML = '<div class="no-letters">No letters found for this date</div>';
+    }
+    
+    modalContent.appendChild(headerDiv);
+    modalContent.appendChild(bodyDiv);
+    modal.appendChild(modalContent);
+    document.body.appendChild(modal);
+    
+    // Add event listener to close button
+    const closeButton = modal.querySelector('.close-day-detail');
+    closeButton.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevent event from bubbling
+        closeDayDetailModal();
+    });
+    
+    // Add click outside to close
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeDayDetailModal();
         }
     });
 }
@@ -1350,6 +2058,7 @@ function renderUserList() {
     const currentUserAvatar = document.createElement('div');
     currentUserAvatar.className = 'user-avatar';
     currentUserAvatar.textContent = getInitials(USERNAME);
+    currentUserAvatar.style.backgroundColor = 'var(--primary-color)';
     
     const currentUserName = document.createElement('div');
     currentUserName.className = 'user-name';
@@ -1365,14 +2074,25 @@ function renderUserList() {
     userListContainerEl.appendChild(currentUserItem);
     
     // Add other community users
-    Object.keys(communityLetters).forEach(username => {
-        if (username !== USERNAME) {
+    const communityUsers = Object.keys(communityLetters).filter(username => username !== USERNAME);
+    
+    if (communityUsers.length) {
+        communityUsers.forEach((username, index) => {
             const userItem = document.createElement('div');
             userItem.className = 'user-item';
             
             const userAvatar = document.createElement('div');
             userAvatar.className = 'user-avatar';
             userAvatar.textContent = getInitials(username);
+            // Assign different colors to different users
+            const avatarColors = [
+                'var(--accent-color)', 
+                'var(--secondary-color)', 
+                '#E91E63', 
+                '#FF9800', 
+                '#9C27B0'
+            ];
+            userAvatar.style.backgroundColor = avatarColors[index % avatarColors.length];
             
             const userName = document.createElement('div');
             userName.className = 'user-name';
@@ -1386,16 +2106,15 @@ function renderUserList() {
             userItem.appendChild(userName);
             userItem.appendChild(userLetterCount);
             userListContainerEl.appendChild(userItem);
-        }
-    });
-    
-    // If no other users, show a message
-    if (Object.keys(communityLetters).length <= 1) {
+        });
+    } else {
+        // If no other users, show a message
         const noUsersEl = document.createElement('div');
-        noUsersEl.textContent = 'No other users have shared letters yet';
-        noUsersEl.style.padding = '10px 0';
-        noUsersEl.style.color = '#999';
-        noUsersEl.style.fontStyle = 'italic';
+        noUsersEl.className = 'empty-state';
+        noUsersEl.innerHTML = `
+            <div class="empty-state-icon"><i class="fas fa-users-slash"></i></div>
+            <div class="empty-state-text">No other users have shared letters yet</div>
+        `;
         userListContainerEl.appendChild(noUsersEl);
     }
 }
@@ -1408,6 +2127,9 @@ function getInitials(username) {
 
 // Function to open letter in the modern full-page view
 function openLetter(dateStr, username, isMyLetter) {
+    // Close any existing day detail modal
+    closeDayDetailModal();
+    
     // Show loading state in the letter page
     letterPageContentEl.innerHTML = '<div class="loading"><div class="spinner"></div><p>Loading letter...</p></div>';
     letterPageEl.style.display = 'block';
@@ -1428,8 +2150,9 @@ function openLetter(dateStr, username, isMyLetter) {
         })
         .then(data => {
             if (data.error) {
-                letterPageContentEl.innerHTML = `<div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                    <i class="fas fa-exclamation-triangle"></i> ${data.error}
+                letterPageContentEl.innerHTML = `<div class="empty-state">
+                    <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <div class="empty-state-text">${data.error}</div>
                 </div>`;
                 return;
             }
@@ -1443,8 +2166,12 @@ function openLetter(dateStr, username, isMyLetter) {
                 format: data.format || 'markdown'
             };
             
+            // Update letter page title
+            document.querySelector('.letter-page-title').textContent = 
+                `Letter from ${username} - ${formatDateForDisplay(dateStr)}`;
+            
             // Show edit button only if edit mode is enabled
-            editLetterBtn.style.display = editMode ? 'block' : 'none';
+            editLetterBtn.style.display = (editMode) ? 'block' : 'none';
             
             // Check if it's markdown or HTML
             if (data.format === 'markdown' || data.content.trim().startsWith('#') || data.content.indexOf('\n## ') > -1) {
@@ -1462,44 +2189,65 @@ function openLetter(dateStr, username, isMyLetter) {
         })
         .catch(error => {
             console.error('Error loading letter:', error);
-            letterPageContentEl.innerHTML = `<div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                <i class="fas fa-exclamation-triangle"></i> Failed to load letter: ${error.message}
-                <p>Please try again or check the browser console for details.</p>
+            letterPageContentEl.innerHTML = `<div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="empty-state-text">Failed to load letter: ${error.message}</div>
+                <button class="btn btn-accent" onclick="window.location.reload()">Reload Page</button>
             </div>`;
         });
 }
 
-// Render markdown letter
+// Render markdown letter with improved parser
 function renderMarkdownLetter(markdownContent, dateStr, username, isMyLetter) {
     try {
         // Parse tags and title (if present at the beginning)
         let tags = [];
         let title = `Letter from ${username}`;
+        const formattedDate = formatDateForDisplay(dateStr);
         
         const lines = markdownContent.split('\n');
-        if (lines.length > 0 && lines[0].startsWith('tags:')) {
+        let lineIndex = 0;
+        
+        // Skip any initial empty lines
+        while (lineIndex < lines.length && lines[lineIndex].trim() === '') {
+            lineIndex++;
+        }
+        
+        // Extract tags if present
+        if (lineIndex < lines.length && lines[lineIndex].trim().startsWith('tags:')) {
             // Extract tags
-            tags = lines[0].substring(5).trim().split(',').map(tag => tag.trim());
-            lines.shift(); // Remove tags line
+            tags = lines[lineIndex].substring(lines[lineIndex].indexOf('tags:') + 5).trim().split(',').map(tag => tag.trim());
+            lineIndex++;
+            
+            // Skip empty lines between tags and title
+            while (lineIndex < lines.length && lines[lineIndex].trim() === '') {
+                lineIndex++;
+            }
         }
         
-        if (lines.length > 0 && lines[0].startsWith('# ')) {
+        // Extract title if present
+        if (lineIndex < lines.length && lines[lineIndex].trim().startsWith('# ')) {
             // Extract title
-            title = lines[0].substring(2).trim();
-            lines.shift(); // Remove title line
+            title = lines[lineIndex].substring(lines[lineIndex].indexOf('# ') + 2).trim();
+            lineIndex++;
+            
+            // Skip empty lines after title
+            while (lineIndex < lines.length && lines[lineIndex].trim() === '') {
+                lineIndex++;
+            }
         }
         
-        // Create formatted date
-        const formattedDate = formatDateForDisplay(dateStr);
+        // Use remaining lines for content
+        const contentLines = lines.slice(lineIndex);
         
         // Render markdown content safely
         let htmlContent;
         try {
-            htmlContent = marked.parse(lines.join('\n'));
+            htmlContent = marked.parse(contentLines.join('\n'));
         } catch (markdownError) {
             console.error("Markdown parsing error:", markdownError);
             htmlContent = `<div class="error">Error parsing markdown: ${markdownError.message}</div>
-                          <pre>${lines.join('\n')}</pre>`;
+                          <pre>${contentLines.join('\n')}</pre>`;
         }
         
         // Create the complete HTML with the original pretty styling
@@ -1514,7 +2262,7 @@ function renderMarkdownLetter(markdownContent, dateStr, username, isMyLetter) {
                         </div>
                     </div>
                     <div style="display: flex; flex-wrap: wrap; gap: 6px; max-width: 40%;">
-                        ${tags.map(tag => `<span style="padding: 4px 8px; background-color: rgba(67, 97, 238, 0.1); color: var(--primary-color); border-radius: 4px; font-size: 0.8rem;">${tag}</span>`).join('')}
+                        ${tags.map(tag => `<span class="badge badge-accent">${tag}</span>`).join('')}
                     </div>
                 </div>
                 
@@ -1547,59 +2295,58 @@ function renderMarkdownLetter(markdownContent, dateStr, username, isMyLetter) {
             }
                
             // Initialize syntax highlighting
-try {
-    // Force re-highlighting of all code blocks
-    document.querySelectorAll('pre code').forEach((block) => {
-        // Add default class if none exists
-        if (!block.className) {
-            block.className = 'language-plaintext';
-        }
-        hljs.highlightElement(block);
-        
-        // Add copy button to each code block
-        const pre = block.parentNode;
-        const copyButton = document.createElement('button');
-        copyButton.className = 'copy-button';
-        copyButton.textContent = 'Copy';
-        
-        copyButton.addEventListener('click', () => {
-            // Copy code to clipboard
-            const code = block.textContent;
-            navigator.clipboard.writeText(code).then(() => {
-                // Visual feedback
-                copyButton.textContent = 'Copied!';
-                copyButton.classList.add('copied');
-                
-                // Reset after 2 seconds
-                setTimeout(() => {
+            try {
+                // Force re-highlighting of all code blocks
+                document.querySelectorAll('pre code').forEach((block) => {
+                    // Add default class if none exists
+                    if (!block.className) {
+                        block.className = 'language-plaintext';
+                    }
+                    hljs.highlightElement(block);
+                    
+                    // Add copy button to each code block
+                    const pre = block.parentNode;
+                    const copyButton = document.createElement('button');
+                    copyButton.className = 'copy-button';
                     copyButton.textContent = 'Copy';
-                    copyButton.classList.remove('copied');
-                }, 2000);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                copyButton.textContent = 'Error';
-                setTimeout(() => {
-                    copyButton.textContent = 'Copy';
-                }, 2000);
-            });
-        });
-        
-        pre.appendChild(copyButton);
-    });
-} catch (syntaxError) {
-    console.warn("Syntax highlighting error (safely handled):", syntaxError);
-}
+                    
+                    copyButton.addEventListener('click', () => {
+                        // Copy code to clipboard
+                        const code = block.textContent;
+                        navigator.clipboard.writeText(code).then(() => {
+                            // Visual feedback
+                            copyButton.textContent = 'Copied!';
+                            copyButton.classList.add('copied');
+                            
+                            // Reset after 2 seconds
+                            setTimeout(() => {
+                                copyButton.textContent = 'Copy';
+                                copyButton.classList.remove('copied');
+                            }, 2000);
+                        }).catch(err => {
+                            console.error('Failed to copy: ', err);
+                            copyButton.textContent = 'Error';
+                            setTimeout(() => {
+                                copyButton.textContent = 'Copy';
+                            }, 2000);
+                        });
+                    });
+                    
+                    pre.appendChild(copyButton);
+                });
+            } catch (syntaxError) {
+                console.warn("Syntax highlighting error (safely handled):", syntaxError);
+            }
 
         }, 100);
     } catch (e) {
         console.error("Error rendering markdown:", e);
         letterPageContentEl.innerHTML = `
-            <div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                <i class="fas fa-exclamation-triangle"></i> 
-                Error rendering markdown: ${e.message}
-                <p>The content will be displayed as raw text below:</p>
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="empty-state-text">Error rendering markdown: ${e.message}</div>
+                <pre style="white-space: pre-wrap; overflow-wrap: break-word; padding: 20px; background: var(--bg-color); color: var(--text-color); margin-top: 20px; border-radius: 4px; max-height: 300px; overflow-y: auto;">${markdownContent}</pre>
             </div>
-            <pre style="white-space: pre-wrap; overflow-wrap: break-word; padding: 20px; background: #f5f5f5; color: #333; margin-top: 20px; border-radius: 4px;">${markdownContent}</pre>
         `;
     }
 }
@@ -1626,6 +2373,7 @@ function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
             iframe.style.width = '100%';
             iframe.style.height = 'calc(100vh - 100px)';
             iframe.style.border = 'none';
+            iframe.style.borderRadius = 'var(--radius-md)';
             
             safeContainer.appendChild(iframe);
             
@@ -1637,9 +2385,9 @@ function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
             } catch (iframeError) {
                 console.error("Error with iframe rendering:", iframeError);
                 safeContainer.innerHTML = `
-                    <div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                        <i class="fas fa-exclamation-triangle"></i> 
-                        Error rendering HTML in iframe. 
+                    <div class="empty-state">
+                        <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                        <div class="empty-state-text">Error rendering HTML in iframe.</div>
                         <p>Attempting direct rendering instead.</p>
                     </div>
                 `;
@@ -1685,9 +2433,9 @@ function renderHtmlLetter(htmlContent, dateStr, username, isMyLetter) {
     } catch (e) {
         console.error("Error rendering HTML:", e);
         letterPageContentEl.innerHTML = `
-            <div style="color: var(--danger-color); padding: 20px; text-align: center;">
-                <i class="fas fa-exclamation-triangle"></i> 
-                Error rendering HTML: ${e.message}
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-exclamation-triangle"></i></div>
+                <div class="empty-state-text">Error rendering HTML: ${e.message}</div>
                 <p>The HTML content cannot be displayed safely.</p>
             </div>
         `;
@@ -1784,6 +2532,9 @@ function saveEdit() {
     const username = currentEditLetter.username;
     const format = currentEditLetter.format || 'markdown';
     
+    // Show saving notification
+    showNotification('Saving letter...', false);
+    
     fetch(`${API_BASE}/edit_letter`, {
         method: 'POST',
         headers: {
@@ -1874,7 +2625,7 @@ function syncLetters() {
             loadLetters();
             loadCommunityLetters();
             
-            showNotification('Letters synced successfully');
+            showNotification(data.message || 'Letters synced successfully');
         })
         .catch(error => {
             console.error('Error syncing letters:', error);
@@ -1890,7 +2641,7 @@ function syncLetters() {
 function showNotification(message, isError = false) {
     notificationEl.textContent = message;
     notificationEl.className = `notification ${isError ? 'error' : ''}`;
-    
+
     // Trigger animation
     setTimeout(() => {
         notificationEl.classList.add('show');
@@ -1901,6 +2652,8 @@ function showNotification(message, isError = false) {
         notificationEl.classList.remove('show');
     }, 3000);
 }
-    </script>
+
+</script>
 </body>
 </html>
+
